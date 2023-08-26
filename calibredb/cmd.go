@@ -9,7 +9,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/ohzqq/ur/cfg"
+	"github.com/ohzqq/cdb"
 	"github.com/ohzqq/ur/util"
 	"github.com/spf13/viper"
 )
@@ -68,7 +68,7 @@ func WithLib(name string) Opt {
 	flags := []string{
 		"--with-library",
 	}
-	lib := cfg.Lib(name)
+	lib := cdb.GetLib(name)
 
 	var uri *url.URL
 	var err error
@@ -77,12 +77,12 @@ func WithLib(name string) Opt {
 		if err != nil {
 			log.Fatal(err)
 		}
-		uri.Fragment = lib.Name()
+		uri.Fragment = lib.Name
 	}
 
 	switch util.SrvIsOnline(uri) {
 	case false:
-		flags = append(flags, lib.Path())
+		flags = append(flags, lib.Path)
 	default:
 		flags = append(flags, uri.String())
 		if u := viper.GetString("calibre.username"); u != "" {

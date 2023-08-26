@@ -1,6 +1,8 @@
 package calibredb
 
-import "github.com/ohzqq/ur/book"
+import (
+	"github.com/ohzqq/cdb"
+)
 
 // SetMetadata sets book metadata
 func SetMetadata(lib, pos string, args ...Opt) *Command {
@@ -14,12 +16,12 @@ func Fields(val map[string]string) Opt {
 	for _, k := range allowedFields {
 		if v, ok := val[k]; ok {
 			switch k {
-			case book.Cover:
+			case cdb.Cover:
 				continue
-			case book.Identifier:
+			case cdb.Identifier:
 				//id = v
 				continue
-			case book.SeriesIndex:
+			case cdb.SeriesIndex:
 				if v != "0" || v != "0.0" {
 					fields = append(fields, "--field", k+":"+v)
 				}

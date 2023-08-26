@@ -1,8 +1,9 @@
 package calibredb
 
 import (
-	"github.com/ohzqq/ur"
-	"github.com/ohzqq/ur/util"
+	"log"
+
+	"github.com/ohzqq/cdb"
 	"github.com/spf13/viper"
 )
 
@@ -20,9 +21,11 @@ func Automerge() Opt {
 }
 
 func Cover(file string) Opt {
-	if ok := util.FileExist(file); !ok {
-		err := util.ErrFileNotExist(file)
-		ur.HandleError(file, err)
+	if ok := cdb.FileExist(file); !ok {
+		err := cdb.ErrFileNotExist(file)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	return Flags("--cover", file)
 }

@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
-	"github.com/BurntSushi/toml"
-	"github.com/ohzqq/ur"
-	"github.com/ohzqq/ur/cdb"
+	"github.com/ohzqq/cdb/calibredb"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 )
 
 // metaSetCmd represents the set command
@@ -24,17 +24,23 @@ var metaSetCmd = &cobra.Command{
 }
 
 func setMeta(id, file string) {
-	set := cdb.SetMetadata(viper.GetString("lib"), id)
+	set := calibredb.SetMetadata(viper.GetString("lib"), id)
 	f, err := os.Open(file)
-	ur.HandleError("", err)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	fields := make(map[string]string)
-	_, err = toml.NewDecoder(f).Decode(&fields)
-	ur.HandleError("", err)
+	err = yaml.NewDecoder(f).Decode(&fields)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	set.Opt(cdb.Fields(fields))
+	set.Opt(calibredb.Fields(fields))
 	out, err := set.Run()
-	ur.HandleError("", err)
+	if err != nil {
+		log.Fatal(err)
+	}
 	if out != "" {
 		fmt.Println(out)
 	}

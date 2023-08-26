@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 
-	"github.com/ohzqq/ur"
-	"github.com/ohzqq/ur/cdb"
+	"github.com/ohzqq/cdb/calibredb"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -41,12 +41,14 @@ var addCmd = &cobra.Command{
 }
 
 func addBook(in string) string {
-	add := cdb.Add(viper.GetString("lib"), in)
+	add := calibredb.Add(viper.GetString("lib"), in)
 	if coverFile != "" {
-		add.Opt(cdb.Cover(coverFile))
+		add.Opt(calibredb.Cover(coverFile))
 	}
 	id, err := add.Run()
-	ur.HandleError("", err)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	fmt.Printf("%s imported: %s\n", viper.GetString("lib"), id)
 

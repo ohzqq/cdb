@@ -63,7 +63,6 @@ func (db *DB) execute(stmt string, args []any) ([]*Book, error) {
 
 	var books []*Book
 
-	fmt.Println(stmt)
 	if db.printQuery {
 		fmt.Println(stmt)
 	}

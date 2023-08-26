@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"net"
 	"net/url"
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/ohzqq/cdb"
-	"github.com/ohzqq/ur/util"
 	"github.com/spf13/viper"
 )
 
@@ -80,7 +81,7 @@ func WithLib(name string) Opt {
 		uri.Fragment = lib.Name
 	}
 
-	switch util.SrvIsOnline(uri) {
+	switch SrvIsOnline(uri) {
 	case false:
 		flags = append(flags, lib.Path)
 	default:
@@ -149,4 +150,14 @@ func (c *Command) Run() (string, error) {
 		}
 	}
 	return output, nil
+}
+
+func SrvIsOnline(u *url.URL) bool {
+	timeout := 1 * time.Second
+	conn, err := net.DialTimeout("tcp", u.Host, timeout)
+	if err != nil {
+		return false
+	}
+	defer conn.Close()
+	return true
 }

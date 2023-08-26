@@ -3,9 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/ohzqq/ur/search/db"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // savedListCmd represents the list command
@@ -13,13 +11,13 @@ var savedListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "list saved searches",
 	Run: func(cmd *cobra.Command, args []string) {
-		saved := db.GetSavedSearches(viper.GetString("lib"))
+		//saved := db.GetSavedSearches(viper.GetString("lib"))
 		var titles []string
 		var searches []string
-		for t, s := range saved {
-			titles = append(titles, t)
-			searches = append(searches, s)
-		}
+		//for t, s := range saved {
+		//titles = append(titles, t)
+		//searches = append(searches, s)
+		//}
 		//m := list.New(titles)
 		//sel := m.Run()
 

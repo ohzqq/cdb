@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 
-	"github.com/ohzqq/ur"
-	"github.com/ohzqq/ur/cdb"
+	"github.com/ohzqq/cdb/calibredb"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -23,12 +23,14 @@ var addFormatCmd = &cobra.Command{
 
 func addFormats(id string, formats []string) {
 	for _, f := range formats {
-		add := cdb.AddFormat(viper.GetString("lib"), id, f)
+		add := calibredb.AddFormat(viper.GetString("lib"), id, f)
 		_, err := add.Run()
 		if err == nil {
 			fmt.Printf("added file: %s\n", f)
 		} else {
-			ur.HandleError("", err)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 }

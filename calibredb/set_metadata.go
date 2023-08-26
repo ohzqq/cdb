@@ -18,7 +18,7 @@ func Fields(val map[string]string) Opt {
 			switch k {
 			case cdb.Cover:
 				continue
-			case cdb.Identifier:
+			case cdb.Identifiers:
 				//id = v
 				continue
 			case cdb.SeriesIndex:

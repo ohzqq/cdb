@@ -2,10 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 
-	"github.com/ohzqq/ur"
-	"github.com/ohzqq/ur/cdb"
-	"github.com/ohzqq/ur/search"
+	"github.com/ohzqq/cdb/calibredb"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -15,12 +14,11 @@ var rmCmd = &cobra.Command{
 	Use:   "rm ID...",
 	Short: "remove a book from the library",
 	Run: func(cmd *cobra.Command, args []string) {
-		remove := cdb.Remove(viper.GetString("lib"), args...)
+		remove := calibredb.Remove(viper.GetString("lib"), args...)
 		_, err := remove.Run()
-		ur.HandleError("", err)
-
-		err = search.Index(viper.GetString("lib")).DeleteDocuments(args)
-		ur.HandleError("index delete", err)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		fmt.Printf("%s removed: %v\n", viper.GetString("lib"), args)
 	},

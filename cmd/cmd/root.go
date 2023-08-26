@@ -31,7 +31,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/cdb/config.toml)")
 
-	rootCmd.PersistentFlags().StringP(&libFlag, "lib", "l", "", "library by name")
+	rootCmd.PersistentFlags().StringP("lib", "l", "", "library by name")
 	viper.BindPFlag("lib", rootCmd.PersistentFlags().Lookup("lib"))
 }
 

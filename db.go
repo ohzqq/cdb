@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -19,14 +20,15 @@ const (
 )
 
 type DB struct {
-	Name       string
-	Models     Models
-	db         *sqlx.DB
-	mtx        sync.Mutex
-	printQuery bool
-	sort       string
-	limit      int
-	query      sq.SelectBuilder
+	Name         string
+	Models       Models
+	db           *sqlx.DB
+	mtx          sync.Mutex
+	printQuery   bool
+	isAudiobooks bool
+	sort         string
+	limit        int
+	query        sq.SelectBuilder
 }
 
 type Row struct {
@@ -54,18 +56,19 @@ type Row struct {
 	UUID         string  `db:"uuid,omitempty" yaml:"-"`
 }
 
-func Configure(name, path string, audiobooks bool) (*DB, error) {
+func Configure(name, path string) (*DB, error) {
 	db := &DB{
 		Name:   name,
 		Models: modelMeta,
 		sort:   "timestamp",
 	}
 
-	if ok := FileExist(path); !ok {
-		return db, ErrFileNotExist(path)
+	p := filepath.Join(path, name, metaDB)
+	if ok := FileExist(p); !ok {
+		return db, ErrFileNotExist(p)
 	}
 
-	url := sqlitePrefix + path + sqliteOpts
+	url := sqlitePrefix + p + sqliteOpts
 	database, err := sqlx.Open("sqlite3", url)
 	if err != nil {
 		return db, fmt.Errorf("database connection %v failed\n", err)
@@ -73,13 +76,12 @@ func Configure(name, path string, audiobooks bool) (*DB, error) {
 
 	db.db = database
 
-	if audiobooks {
-		db.Models = AudiobookModels()
-		err := db.getAudiobookColumns()
-		return db, err
-	}
-
 	return db, nil
+}
+
+func (db *DB) IsAudiobooks() error {
+	db.Models = AudiobookModels()
+	return db.getAudiobookColumns()
 }
 
 func (db DB) IsConnected() bool {
@@ -139,15 +141,15 @@ func AddedInThePastDays(d int) string {
 	return fmt.Sprintf("last_modified > DATE('now', '-%d day')", d)
 }
 
-func (db *DB) Results() ([]*Book, error) {
+func (db *DB) Results() ([]*Row, error) {
 	return db.execute(toSql(db.query))
 }
 
-func (db *DB) execute(stmt string, args []any) ([]*Book, error) {
+func (db *DB) execute(stmt string, args []any) ([]*Row, error) {
 	db.mtx.Lock()
 	defer db.mtx.Unlock()
 
-	var books []*Book
+	var books []*Row
 
 	if db.printQuery {
 		fmt.Println(stmt)
@@ -167,7 +169,7 @@ func (db *DB) execute(stmt string, args []any) ([]*Book, error) {
 		if err != nil {
 			return books, err
 		}
-		books = append(books, RowToBook(b, db.Name))
+		books = append(books, b)
 	}
 
 	return books, nil

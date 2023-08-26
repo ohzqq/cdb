@@ -1,4 +1,4 @@
-package calibredb
+package cdb
 
 type Opt func(*DB)
 

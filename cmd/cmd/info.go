@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/ohzqq/cdb"
 	"github.com/spf13/cobra"
@@ -16,6 +17,12 @@ var infoCmd = &cobra.Command{
 		fmt.Printf("default Lib: %v\n", cdb.DefaultLibrary())
 		lib := cdb.GetLib("audiobooks")
 		fmt.Printf("Lib: %v\n", lib)
+		err := lib.ConnectDB()
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Printf("db is connected: %v\n", lib.IsConnected())
+		fmt.Printf("db models: %v\n", lib.Models)
 	},
 }
 

@@ -2,7 +2,9 @@ package cdb
 
 import (
 	"log"
+	"strings"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/spf13/viper"
 )
 
@@ -38,4 +40,18 @@ func (l *Lib) ConnectDB() error {
 
 	l.DB = db
 	return nil
+}
+
+func (l *Lib) NewSearch() *Search {
+	search := &Search{}
+
+	var cols []string
+	for _, m := range l.Models {
+		cols = append(cols, m.ToSql())
+	}
+
+	search.query = sq.Select(strings.Join(cols, ",\n")).
+		From("books")
+
+	return search
 }

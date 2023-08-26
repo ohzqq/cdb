@@ -22,7 +22,9 @@ var infoCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		fmt.Printf("db is connected: %v\n", lib.IsConnected())
-		fmt.Printf("db models: %v\n", lib.Models)
+		//fmt.Printf("db models: %v\n", lib.Models)
+		s := lib.NewSearch()
+		fmt.Printf("search: %+V\n", s)
 	},
 }
 

@@ -9,7 +9,6 @@ import (
 )
 
 type Lib struct {
-	*DB
 	Name       string
 	Path       string
 	Audiobooks bool
@@ -25,28 +24,34 @@ func GetLib(name string) *Lib {
 	return lib
 }
 
-func (l *Lib) ConnectDB() error {
+func (l *Lib) ConnectDB() (*DB, error) {
 	db, err := Configure(l.Name, l.Path)
 	if err != nil {
-		return err
+		return db, err
 	}
 
 	if l.Audiobooks {
 		err := db.IsAudiobooks()
 		if err != nil {
-			return err
+			return db, err
 		}
 	}
 
-	l.DB = db
-	return nil
+	return db, nil
 }
 
 func (l *Lib) NewSearch() *Search {
-	search := &Search{}
+	db, err := l.ConnectDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	search := &Search{
+		db: db,
+	}
 
 	var cols []string
-	for _, m := range l.Models {
+	for _, m := range db.Models {
 		cols = append(cols, m.ToSql())
 	}
 

@@ -16,15 +16,13 @@ var infoCmd = &cobra.Command{
 		fmt.Printf("All Libraries: %v\n", cdb.ListLibraries())
 		fmt.Printf("default Lib: %v\n", cdb.DefaultLibrary())
 		lib := cdb.GetLib("audiobooks")
-		fmt.Printf("Lib: %v\n", lib)
-		err := lib.ConnectDB()
+		//fmt.Printf("db models: %v\n", lib.Models)
+		s := lib.NewSearch().Limit(5)
+		r, err := s.Results()
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("db is connected: %v\n", lib.IsConnected())
-		//fmt.Printf("db models: %v\n", lib.Models)
-		s := lib.NewSearch()
-		fmt.Printf("search: %+V\n", s)
+		fmt.Printf("search: %+V\n", r)
 	},
 }
 

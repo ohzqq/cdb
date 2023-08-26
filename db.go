@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 
 	sq "github.com/Masterminds/squirrel"
@@ -88,69 +87,13 @@ func (db DB) IsConnected() bool {
 	return db.db != nil
 }
 
-func (db *DB) NewSearch() *DB {
-	var cols []string
-	for _, m := range db.Models {
-		cols = append(cols, m.ToSql())
-	}
-
-	db.query = sq.Select(strings.Join(cols, ",\n")).
-		From("books")
-
-	return db
-}
-
-func (db *DB) GetByID(ids ...any) *DB {
-	db.query = db.query.Where(sq.Eq{"id": ids})
-	return db
-}
-
-func (q *DB) Sort(v string) *DB {
-	db := strings.Split(v, ":")
-	sort := db[0]
-	if order := db[1]; order == "desc" {
-		sort += " DESC\n"
-	}
-	q.query = q.query.OrderBy(sort)
-	return q
-}
-
-func (db *DB) Limit(v int) *DB {
-	db.limit = v
-	db.query = db.query.Limit(uint64(v))
-	return db
-}
-
-func (db *DB) Page(v int) *DB {
-	if db.limit == 0 {
-		db.Limit(20)
-	}
-	db.query = db.query.Offset(calculateOffset(v, db.limit))
-	return db
-}
-
-func (db *DB) Filter(w string) *DB {
-	db.query = db.query.Where(w)
-	return db
-}
-
-func AddedInThePastDays(d int) string {
-	if d == 0 {
-		d = 7
-	}
-	return fmt.Sprintf("last_modified > DATE('now', '-%d day')", d)
-}
-
-func (db *DB) Results() ([]*Row, error) {
-	return db.execute(toSql(db.query))
-}
-
 func (db *DB) execute(stmt string, args []any) ([]*Row, error) {
 	db.mtx.Lock()
 	defer db.mtx.Unlock()
 
 	var books []*Row
 
+	fmt.Println(stmt)
 	if db.printQuery {
 		fmt.Println(stmt)
 	}

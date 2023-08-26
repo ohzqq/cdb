@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 
@@ -30,11 +31,7 @@ func setMeta(id, file string) {
 		log.Fatal(err)
 	}
 
-	fields := make(map[string]string)
-	err = yaml.NewDecoder(f).Decode(&fields)
-	if err != nil {
-		log.Fatal(err)
-	}
+	fields := decodeMeta(f)
 
 	set.Opt(calibredb.Fields(fields))
 	out, err := set.Run()
@@ -44,6 +41,15 @@ func setMeta(id, file string) {
 	if out != "" {
 		fmt.Println(out)
 	}
+}
+
+func decodeMeta(r io.Reader) map[string]string {
+	fields := make(map[string]string)
+	err := yaml.NewDecoder(r).Decode(&fields)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return fields
 }
 
 func init() {

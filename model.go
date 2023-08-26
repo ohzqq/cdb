@@ -65,7 +65,6 @@ func GetModel(label string) Model {
 }
 
 func (m Model) ToSql() string {
-	println(m.Label)
 	switch {
 	case m.isManyToOne():
 		stmt, _ := manyToOne(m)
@@ -254,7 +253,7 @@ var modelMeta = Models{
 
 	LastModified: Model{
 		CategorySort: "last_modified",
-		Column:       "datetime(last_modified)",
+		Column:       "date(last_modified)",
 		IsEditable:   false,
 		Label:        "last_modified",
 		Name:         "Modified",
@@ -271,7 +270,7 @@ var modelMeta = Models{
 
 	Pubdate: Model{
 		CategorySort: "pubdate",
-		Column:       "datetime(pubdate)",
+		Column:       "date(pubdate)",
 		IsEditable:   true,
 		Label:        "pubdate",
 		Name:         "Published",
@@ -344,7 +343,7 @@ var modelMeta = Models{
 
 	Timestamp: Model{
 		CategorySort: "timestamp",
-		Column:       "datetime(timestamp)",
+		Column:       "date(timestamp)",
 		IsEditable:   false,
 		Label:        "timestamp",
 		Name:         "Added",

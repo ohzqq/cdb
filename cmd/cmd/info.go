@@ -12,7 +12,8 @@ var infoCmd = &cobra.Command{
 	Use:   "info",
 	Short: "info about your calibre libs",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("%v\n", cdb.ListLibraries())
+		fmt.Printf("All Libraries: %v\n", cdb.ListLibraries())
+		fmt.Printf("default Lib: %v\n", cdb.DefaultLibrary())
 	},
 }
 

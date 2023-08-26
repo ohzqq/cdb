@@ -9,3 +9,7 @@ func ListLibraries() []string {
 	libs := viper.GetStringMap("libraries")
 	return maps.Keys(libs)
 }
+
+func DefaultLibrary() string {
+	return viper.GetString("options.default")
+}

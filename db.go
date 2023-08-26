@@ -55,7 +55,7 @@ type Row struct {
 	UUID         string  `db:"uuid,omitempty" yaml:"-"`
 }
 
-func Configure(name, path string) (*DB, error) {
+func configDB(name, path string) (*DB, error) {
 	db := &DB{
 		Name:   name,
 		Models: modelMeta,
@@ -76,11 +76,6 @@ func Configure(name, path string) (*DB, error) {
 	db.db = database
 
 	return db, nil
-}
-
-func (db *DB) IsAudiobooks() error {
-	db.Models = AudiobookModels()
-	return db.getAudiobookColumns()
 }
 
 func (db DB) IsConnected() bool {
@@ -121,6 +116,8 @@ func (db *DB) execute(stmt string, args []any) ([]*Row, error) {
 func (db *DB) getAudiobookColumns() error {
 	db.mtx.Lock()
 	defer db.mtx.Unlock()
+
+	db.Models = AudiobookModels()
 
 	csql := sq.Case("label").
 		When("'narrators'", "'books_custom_column_' || id || '_link'").

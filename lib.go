@@ -25,13 +25,13 @@ func GetLib(name string) *Lib {
 }
 
 func (l *Lib) ConnectDB() (*DB, error) {
-	db, err := Configure(l.Name, l.Path)
+	db, err := configDB(l.Name, l.Path)
 	if err != nil {
 		return db, err
 	}
 
 	if l.Audiobooks {
-		err := db.IsAudiobooks()
+		err := db.getAudiobookColumns()
 		if err != nil {
 			return db, err
 		}

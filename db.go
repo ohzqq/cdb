@@ -30,31 +30,6 @@ type DB struct {
 	query        sq.SelectBuilder
 }
 
-type Row struct {
-	Title        string  `db:"title" yaml:"title"`
-	Authors      string  `db:"authors" yaml:"authors,omitempty"`
-	Narrators    string  `db:"narrators" yaml:"#narrators,omitempty"`
-	Series       string  `db:"series" yaml:"series,omitempty"`
-	SeriesIndex  float32 `db:"series_index" yaml:"series_index,omitempty"`
-	Tags         string  `db:"tags" yaml:"tags,omitempty"`
-	Pubdate      string  `db:"pubdate" yaml:"pubdate,omitempty"`
-	Timestamp    string  `db:"timestamp" yaml:"timestamp,omitempty"`
-	Duration     string  `db:"duration" yaml:"#duration,omitempty"`
-	Comments     string  `db:"comments" yaml:"comments,omitempty"`
-	Rating       string  `db:"rating" yaml:"rating,omitempty"`
-	Publisher    string  `db:"publisher" yaml:"publisher,omitempty"`
-	Languages    string  `db:"languages" yaml:"languages,omitempty"`
-	Cover        string  `db:"cover" yaml:"-"`
-	Formats      string  `db:"formats" yaml:"-"`
-	Identifiers  string  `db:"identifiers" yaml:"identifiers,omitempty"`
-	LastModified string  `db:"last_modified" yaml:"last_modified,omitempty"`
-	ID           int     `db:"id" yaml:"-"`
-	AuthorSort   string  `db:"author_sort" yaml:"author_sort,omitempty"`
-	Sort         string  `db:"sort" yaml:"sort,omitempty"`
-	Path         string  `db:"path" yaml:"-"`
-	UUID         string  `db:"uuid,omitempty" yaml:"-"`
-}
-
 func configDB(name, path string) (*DB, error) {
 	db := &DB{
 		Name:   name,
@@ -82,11 +57,11 @@ func (db DB) IsConnected() bool {
 	return db.db != nil
 }
 
-func (db *DB) execute(stmt string, args []any) ([]*Row, error) {
+func (db *DB) execute(stmt string, args []any) ([]*Book, error) {
 	db.mtx.Lock()
 	defer db.mtx.Unlock()
 
-	var books []*Row
+	var books []*Book
 
 	fmt.Println(stmt)
 	if db.printQuery {
@@ -102,7 +77,7 @@ func (db *DB) execute(stmt string, args []any) ([]*Row, error) {
 	db.db.Unsafe()
 
 	for rows.Next() {
-		b := &Row{}
+		b := &Book{}
 		err := rows.StructScan(b)
 		if err != nil {
 			return books, err

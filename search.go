@@ -48,7 +48,7 @@ func (db *Search) Filter(w string) *Search {
 	return db
 }
 
-func (s *Search) Results() ([]*Row, error) {
+func (s *Search) Results() ([]*Book, error) {
 	return s.db.execute(toSql(s.query))
 }
 

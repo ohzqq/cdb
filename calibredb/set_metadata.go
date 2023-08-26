@@ -46,7 +46,6 @@ var allowedFields = []string{
 	"series_index",
 	"sort",
 	"tags",
-	"timestamp",
 	"title",
 	"#narrators",
 	"#duration",

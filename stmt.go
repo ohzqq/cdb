@@ -12,7 +12,7 @@ func booksColumn(m Model) (string, []any) {
 
 func groupConcat(m Model) string {
 	sep := defaultSep
-	if m.Label == "authors" || m.Label == "narrators" {
+	if m.Label == Authors || m.Label == Narrators {
 		sep = namesSep
 	}
 	return fmt.Sprintf("IFNULL(GROUP_CONCAT(%s, '%s'), '')", m.Column, sep)
@@ -40,7 +40,7 @@ func manyToMany(m Model) (string, []any) {
 	cs, _ := toSql(col)
 	js, _ := toSql(join)
 
-	stmt := fmt.Sprintf("(%s IN (%s)) %s", cs, js, m.Label)
+	stmt := fmt.Sprintf("(%s IN (%s)) '%s'", cs, js, m.Label)
 
 	return stmt, []any{}
 }

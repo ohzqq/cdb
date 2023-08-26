@@ -3,13 +3,13 @@ package cdb
 type Book struct {
 	Title        string  `db:"title" yaml:"title"`
 	Authors      string  `db:"authors" yaml:"authors,omitempty"`
-	Narrators    string  `db:"narrators" yaml:"#narrators,omitempty"`
+	Narrators    string  `db:"#narrators" yaml:"#narrators,omitempty"`
 	Series       string  `db:"series" yaml:"series,omitempty"`
 	SeriesIndex  float32 `db:"series_index" yaml:"series_index,omitempty"`
 	Tags         string  `db:"tags" yaml:"tags,omitempty"`
 	Pubdate      string  `db:"pubdate" yaml:"pubdate,omitempty"`
 	Timestamp    string  `db:"timestamp" yaml:"timestamp,omitempty"`
-	Duration     string  `db:"duration" yaml:"#duration,omitempty"`
+	Duration     string  `db:"#duration" yaml:"#duration,omitempty"`
 	Comments     string  `db:"comments" yaml:"comments,omitempty"`
 	Rating       string  `db:"rating" yaml:"rating,omitempty"`
 	Publisher    string  `db:"publisher" yaml:"publisher,omitempty"`

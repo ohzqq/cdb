@@ -102,7 +102,7 @@ func (db *DB) getAudiobookColumns() error {
 		return err
 	}
 
-	key := sq.Select("id", "label", "name").
+	key := sq.Select("id", "'#' || label 'label'", "name").
 		Column(c + " 'join_table'").
 		Column("'custom_column_' || id 'table'").
 		From("custom_columns").

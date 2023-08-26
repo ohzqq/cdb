@@ -25,8 +25,8 @@ const (
 	Timestamp     = "timestamp"
 	Title         = "title"
 	UUID          = "uuid"
-	Duration      = "duration"
-	Narrators     = "narrators"
+	Duration      = "#duration"
+	Narrators     = "#narrators"
 )
 
 type Model struct {
@@ -56,11 +56,16 @@ func AudiobookModels() Models {
 	return models
 }
 
+func AllModels() Models {
+	return AudiobookModels()
+}
+
 func GetModel(label string) Model {
 	return modelMeta[label]
 }
 
 func (m Model) ToSql() string {
+	println(m.Label)
 	switch {
 	case m.isManyToOne():
 		stmt, _ := manyToOne(m)
@@ -110,6 +115,16 @@ func (m Model) isManyToMany() bool {
 	return false
 }
 
+func (m Models) Editable() []string {
+	var edit []string
+	for l, mod := range m {
+		if mod.IsEditable {
+			edit = append(edit, l)
+		}
+	}
+	return edit
+}
+
 var oneToOneModels = []string{
 	AuthorSort,
 	ID,
@@ -143,7 +158,7 @@ var durationModel = Model{
 	CategorySort: "value",
 	IsCustom:     true,
 	IsEditable:   true,
-	Label:        "duration",
+	Label:        "#duration",
 	Name:         "Duration",
 }
 
@@ -154,7 +169,7 @@ var narratorsModel = Model{
 	IsCustom:     true,
 	IsEditable:   true,
 	IsNames:      true,
-	Label:        "narrators",
+	Label:        "#narrators",
 	LinkColumn:   "value",
 	Name:         "Narrators",
 }
@@ -190,7 +205,7 @@ var modelMeta = Models{
 
 	Cover: Model{
 		Column:     "cover",
-		IsEditable: true,
+		IsEditable: false,
 		IsNames:    false,
 		Label:      "cover",
 		Name:       "Cover",
@@ -200,7 +215,7 @@ var modelMeta = Models{
 		Column:       `'books/' || books.id || '/' || data.name || '.' || lower(format)`,
 		CategorySort: "format",
 		IsCategory:   true,
-		IsEditable:   true,
+		IsEditable:   false,
 		Label:        "formats",
 		Name:         "Formats",
 		Table:        "data",
@@ -209,7 +224,7 @@ var modelMeta = Models{
 	ID: Model{
 		CategorySort: "",
 		Column:       "id",
-		IsEditable:   true,
+		IsEditable:   false,
 		Label:        "id",
 		Name:         "ID",
 		Table:        "books",
@@ -240,7 +255,7 @@ var modelMeta = Models{
 	LastModified: Model{
 		CategorySort: "last_modified",
 		Column:       "datetime(last_modified)",
-		IsEditable:   true,
+		IsEditable:   false,
 		Label:        "last_modified",
 		Name:         "Modified",
 		Table:        "books",
@@ -249,7 +264,7 @@ var modelMeta = Models{
 	Path: Model{
 		CategorySort: "path",
 		Column:       "path",
-		IsEditable:   true,
+		IsEditable:   false,
 		Label:        "path",
 		Name:         "Path",
 	},
@@ -330,7 +345,7 @@ var modelMeta = Models{
 	Timestamp: Model{
 		CategorySort: "timestamp",
 		Column:       "datetime(timestamp)",
-		IsEditable:   true,
+		IsEditable:   false,
 		Label:        "timestamp",
 		Name:         "Added",
 		Table:        "books",
@@ -348,7 +363,7 @@ var modelMeta = Models{
 	UUID: Model{
 		CategorySort: "uuid",
 		Column:       "uuid",
-		IsEditable:   true,
+		IsEditable:   false,
 		Label:        "uuid",
 		Name:         "UUID",
 	},

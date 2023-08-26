@@ -23,6 +23,7 @@ var infoCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		fmt.Printf("search: %+V\n", r)
+		fmt.Printf("editable %v\n", cdb.AllModels().Editable())
 	},
 }
 

@@ -14,6 +14,8 @@ var infoCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("All Libraries: %v\n", cdb.ListLibraries())
 		fmt.Printf("default Lib: %v\n", cdb.DefaultLibrary())
+		lib := cdb.GetLib("audiobooks")
+		fmt.Printf("Lib: %v\n", lib)
 	},
 }
 

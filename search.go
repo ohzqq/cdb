@@ -7,19 +7,23 @@ import (
 	sq "github.com/Masterminds/squirrel"
 )
 
-type Search struct {
+type Query struct {
 	query sq.SelectBuilder
 	db    *DB
 	sort  string
 	limit int
 }
 
-func (db *Search) GetByID(ids ...any) *Search {
+func Search(l string) *Query {
+	return GetLib(l).NewQuery()
+}
+
+func (db *Query) GetByID(ids ...any) *Query {
 	db.query = db.query.Where(sq.Eq{"id": ids})
 	return db
 }
 
-func (q *Search) Sort(v string) *Search {
+func (q *Query) Sort(v string) *Query {
 	db := strings.Split(v, ":")
 	sort := db[0]
 	if order := db[1]; order == "desc" {
@@ -29,13 +33,13 @@ func (q *Search) Sort(v string) *Search {
 	return q
 }
 
-func (db *Search) Limit(v int) *Search {
+func (db *Query) Limit(v int) *Query {
 	db.limit = v
 	db.query = db.query.Limit(uint64(v))
 	return db
 }
 
-func (db *Search) Page(v int) *Search {
+func (db *Query) Page(v int) *Query {
 	if db.limit == 0 {
 		db.Limit(20)
 	}
@@ -43,12 +47,12 @@ func (db *Search) Page(v int) *Search {
 	return db
 }
 
-func (db *Search) Filter(w string) *Search {
+func (db *Query) Filter(w string) *Query {
 	db.query = db.query.Where(w)
 	return db
 }
 
-func (s *Search) Results() ([]*Book, error) {
+func (s *Query) Results() ([]*Book, error) {
 	return s.db.execute(toSql(s.query))
 }
 

@@ -20,8 +20,7 @@ var metaShowCmd = &cobra.Command{
 	PreRun: debug,
 	Run: func(cmd *cobra.Command, args []string) {
 		id := args[0]
-		lib := cdb.GetLib(viper.GetString("lib"))
-		s := lib.NewSearch().GetByID(id)
+		s := cdb.Search(viper.GetString("lib")).GetByID(id)
 		r, err := s.Results()
 		if err != nil {
 			log.Fatal(err)

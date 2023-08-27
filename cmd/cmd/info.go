@@ -17,7 +17,7 @@ var infoCmd = &cobra.Command{
 		fmt.Printf("default Lib: %v\n", cdb.DefaultLibrary())
 		lib := cdb.GetLib("audiobooks")
 		//fmt.Printf("db models: %v\n", lib.Models)
-		s := lib.NewSearch().Limit(5)
+		s := lib.NewQuery().Limit(5)
 		r, err := s.Results()
 		if err != nil {
 			log.Fatal(err)

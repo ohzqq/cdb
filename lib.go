@@ -40,13 +40,13 @@ func (l *Lib) ConnectDB() (*DB, error) {
 	return db, nil
 }
 
-func (l *Lib) NewSearch() *Search {
+func (l *Lib) NewQuery() *Query {
 	db, err := l.ConnectDB()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	search := &Search{
+	search := &Query{
 		db: db,
 	}
 

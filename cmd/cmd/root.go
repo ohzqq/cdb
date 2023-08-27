@@ -59,8 +59,7 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		defLib := viper.GetString("library_options.default")
-		viper.SetDefault("lib", defLib)
+		viper.SetDefault("lib", viper.GetString("options.default"))
 	} else {
 		log.Fatalf("config error %v\n", err)
 	}

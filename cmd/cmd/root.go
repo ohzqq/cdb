@@ -33,6 +33,10 @@ func init() {
 
 	rootCmd.PersistentFlags().StringP("lib", "l", "", "library by name")
 	viper.BindPFlag("lib", rootCmd.PersistentFlags().Lookup("lib"))
+
+	rootCmd.PersistentFlags().Bool("dry-run", false, "show generated command")
+	viper.BindPFlag("dry-run", rootCmd.PersistentFlags().Lookup("dry-run"))
+
 }
 
 // initConfig reads in config file and ENV variables if set.

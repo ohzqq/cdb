@@ -119,6 +119,9 @@ func (c *Command) Run() (string, error) {
 	}
 
 	cmd := c.Build()
+	if viper.GetBool("dry-run") {
+		return cmd.String(), nil
+	}
 
 	var (
 		stderr bytes.Buffer

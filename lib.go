@@ -9,10 +9,8 @@ import (
 
 type Lib struct {
 	db           *DB
-	query        *Query
 	Name         string
 	Path         string
-	Audiobooks   bool
 	isAudiobooks bool
 }
 
@@ -77,21 +75,3 @@ func (l *Lib) NewQuery() *Query {
 
 	return NewQuery(cols)
 }
-
-//func (lib *Lib) GetSavedSearches() map[string]string {
-//  base := GetDB(lib)
-//  saved := base.GetPreference("savedSearches")
-//  var searches map[string]string
-//  err := json.Unmarshal(saved, &searches)
-//  ur.HandleError("saved searches query", err)
-//  return searches
-//}
-
-//func (lib *Lib) GetHiddenCategories() []string {
-//  base := GetDB(lib.Name)
-//  hidden := base.GetPreference("hiddenCategories")
-//  var cats []string
-//  err := json.Unmarshal(hidden, &cats)
-//  ur.HandleError("hidden categories query", err)
-//  return cats
-//}

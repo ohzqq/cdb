@@ -8,28 +8,28 @@ import (
 )
 
 type Book struct {
-	Title        string  `db:"title" yaml:"title"`
-	Authors      string  `db:"authors" yaml:"authors,omitempty"`
-	Narrators    string  `db:"#narrators" yaml:"#narrators,omitempty"`
-	Series       string  `db:"series" yaml:"series,omitempty"`
-	SeriesIndex  float64 `db:"series_index" yaml:"series_index,omitempty"`
-	Tags         string  `db:"tags" yaml:"tags,omitempty"`
-	Pubdate      string  `db:"pubdate" yaml:"pubdate,omitempty"`
-	Timestamp    string  `db:"timestamp" yaml:"timestamp,omitempty"`
-	Duration     string  `db:"#duration" yaml:"#duration,omitempty"`
-	Comments     string  `db:"comments" yaml:"comments,omitempty"`
-	Rating       string  `db:"rating" yaml:"rating,omitempty"`
-	Publisher    string  `db:"publisher" yaml:"publisher,omitempty"`
-	Languages    string  `db:"languages" yaml:"languages,omitempty"`
-	Cover        string  `db:"cover" yaml:"-"`
-	Formats      string  `db:"formats" yaml:"-"`
-	Identifiers  string  `db:"identifiers" yaml:"identifiers,omitempty"`
-	LastModified string  `db:"last_modified" yaml:"last_modified,omitempty"`
-	ID           string  `db:"id" yaml:"-"`
-	AuthorSort   string  `db:"author_sort" yaml:"author_sort,omitempty"`
-	Sort         string  `db:"sort" yaml:"sort,omitempty"`
-	Path         string  `db:"path" yaml:"-"`
-	UUID         string  `db:"uuid,omitempty" yaml:"-"`
+	Title        string  `db:"title" yaml:"title" json:"title"`
+	Authors      string  `db:"authors" yaml:"authors,omitempty" json:"authors,omitempty"`
+	Narrators    string  `db:"#narrators" yaml:"#narrators,omitempty" json:"#narrators,omitempty"`
+	Series       string  `db:"series" yaml:"series,omitempty" json:"series,omitempty"`
+	SeriesIndex  float64 `db:"series_index" yaml:"series_index,omitempty" json:"series_index,omitempty"`
+	Tags         string  `db:"tags" yaml:"tags,omitempty" json:"tags,omitempty"`
+	Pubdate      string  `db:"pubdate" yaml:"pubdate,omitempty" json:"pubdate,omitempty"`
+	Timestamp    string  `db:"timestamp" yaml:"timestamp,omitempty" json:"timestamp,omitempty"`
+	Duration     string  `db:"#duration" yaml:"#duration,omitempty" json:"#duration,omitempty"`
+	Comments     string  `db:"comments" yaml:"comments,omitempty" json:"comments,omitempty"`
+	Rating       string  `db:"rating" yaml:"rating,omitempty" json:"rating,omitempty"`
+	Publisher    string  `db:"publisher" yaml:"publisher,omitempty" json:"publisher,omitempty"`
+	Languages    string  `db:"languages" yaml:"languages,omitempty" json:"languages,omitempty"`
+	Cover        string  `db:"cover" yaml:"-" json:"cover,omitempty"`
+	Formats      string  `db:"formats" yaml:"-" json:"formats,omitempty"`
+	Identifiers  string  `db:"identifiers" yaml:"identifiers,omitempty" json:"identifiers,omitempty"`
+	LastModified string  `db:"last_modified" yaml:"last_modified,omitempty" json:"last_modified,omitempty"`
+	ID           int     `db:"id" yaml:"-" yaml:"id,omitempty"`
+	AuthorSort   string  `db:"author_sort" yaml:"author_sort,omitempty" json:"author_sort,omitempty"`
+	Sort         string  `db:"sort" yaml:"sort,omitempty" json:"sort,omitempty"`
+	Path         string  `db:"path" yaml:"-" json:"path,omitempty"`
+	UUID         string  `db:"uuid,omitempty" yaml:"-" json:"uuid,omitempty"`
 }
 
 func (b *Book) ToYAML() []byte {
@@ -88,9 +88,9 @@ func (b *Book) Map() map[string]any {
 	if v := b.LastModified; v != "" {
 		book[LastModified] = v
 	}
-	//if v := b.ID; v != 0 {
-	//  book[ID] = v
-	//}
+	if v := b.ID; v != 0 {
+		book[ID] = v
+	}
 	if v := b.AuthorSort; v != "" {
 		book[AuthorSort] = v
 	}
@@ -115,7 +115,7 @@ func (b *Book) StringMap() map[string]string {
 	for k, v := range b.Map() {
 		switch k {
 		case ID:
-			//book[k] = strconv.Itoa(v.(int))
+			book[k] = strconv.Itoa(v.(int))
 		case SeriesIndex:
 			book[k] = strconv.FormatFloat(v.(float64), 'f', -1, 32)
 		default:

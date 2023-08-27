@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"sync"
 
 	sq "github.com/Masterminds/squirrel"
@@ -19,45 +18,35 @@ const (
 )
 
 type DB struct {
-	Name         string
-	Models       Models
-	db           *sqlx.DB
-	mtx          sync.Mutex
-	printQuery   bool
-	isAudiobooks bool
-	sort         string
-	limit        int
-	query        sq.SelectBuilder
+	db         *sqlx.DB
+	printQuery bool
+	mtx        sync.Mutex
 }
 
-func configDB(name, path string) (*DB, error) {
-	db := &DB{
-		Name:   name,
-		Models: modelMeta,
-		sort:   "timestamp",
+func (db *DB) Connect(p string) error {
+	if db.IsConnected() {
+		return nil
 	}
 
-	p := filepath.Join(path, name, metaDB)
 	if ok := FileExist(p); !ok {
-		return db, ErrFileNotExist(p)
+		return ErrFileNotExist(p)
 	}
 
 	url := sqlitePrefix + p + sqliteOpts
 	database, err := sqlx.Open("sqlite3", url)
 	if err != nil {
-		return db, fmt.Errorf("database connection %v failed\n", err)
+		return fmt.Errorf("database connection %v failed\n", err)
 	}
 
 	db.db = database
-
-	return db, nil
+	return nil
 }
 
 func (db DB) IsConnected() bool {
 	return db.db != nil
 }
 
-func (db *DB) execute(stmt string, args []any) ([]*Book, error) {
+func (db *DB) getBooks(stmt string, args []any) ([]*Book, error) {
 	db.mtx.Lock()
 	defer db.mtx.Unlock()
 
@@ -87,11 +76,11 @@ func (db *DB) execute(stmt string, args []any) ([]*Book, error) {
 	return books, nil
 }
 
-func (db *DB) getAudiobookColumns() error {
+func (db *DB) getAudiobookColumns() (Models, error) {
 	db.mtx.Lock()
 	defer db.mtx.Unlock()
 
-	db.Models = AudiobookModels()
+	models := AudiobookModels()
 
 	csql := sq.Case("label").
 		When("'narrators'", "'books_custom_column_' || id || '_link'").
@@ -99,7 +88,7 @@ func (db *DB) getAudiobookColumns() error {
 
 	c, _, err := csql.ToSql()
 	if err != nil {
-		return err
+		return models, err
 	}
 
 	key := sq.Select("id", "'#' || label 'label'", "name").
@@ -110,12 +99,12 @@ func (db *DB) getAudiobookColumns() error {
 
 	stmt, args, err := key.ToSql()
 	if err != nil {
-		return err
+		return models, err
 	}
 
 	rows, err := db.db.Queryx(stmt, args...)
 	if err != nil {
-		return fmt.Errorf("error %v\n, query\n %v", err, stmt)
+		return models, fmt.Errorf("error %v\n, query\n %v", err, stmt)
 	}
 	defer rows.Close()
 	db.db.Unsafe()
@@ -124,14 +113,14 @@ func (db *DB) getAudiobookColumns() error {
 		var m Model
 		err := rows.StructScan(&m)
 		if err != nil {
-			return err
+			return models, err
 		}
-		mod := db.Models[m.Label]
+		mod := models[m.Label]
 		mod.JoinTable = m.JoinTable
 		mod.Table = m.Table
-		db.Models[m.Label] = mod
+		models[m.Label] = mod
 	}
-	return nil
+	return models, nil
 }
 
 func ErrFileNotExist(path string) error {

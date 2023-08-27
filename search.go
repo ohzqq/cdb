@@ -9,18 +9,24 @@ import (
 
 type Query struct {
 	query sq.SelectBuilder
-	db    *DB
 	sort  string
 	limit int
 }
 
-func Search(l string) *Query {
-	return GetLib(l).NewQuery()
+func NewQuery(cols []string) *Query {
+	q := &Query{
+		sort: "timestamp",
+	}
+
+	q.query = sq.Select(strings.Join(cols, ",\n")).
+		From("books")
+
+	return q
 }
 
-func (db *Query) GetByID(ids ...any) *Query {
-	db.query = db.query.Where(sq.Eq{"id": ids})
-	return db
+func (q *Query) GetByID(ids ...any) *Query {
+	q.query = q.query.Where(sq.Eq{"id": ids})
+	return q
 }
 
 func (q *Query) Sort(v string) *Query {
@@ -33,27 +39,27 @@ func (q *Query) Sort(v string) *Query {
 	return q
 }
 
-func (db *Query) Limit(v int) *Query {
-	db.limit = v
-	db.query = db.query.Limit(uint64(v))
-	return db
+func (q *Query) Limit(v int) *Query {
+	q.limit = v
+	q.query = q.query.Limit(uint64(v))
+	return q
 }
 
-func (db *Query) Page(v int) *Query {
-	if db.limit == 0 {
-		db.Limit(20)
+func (q *Query) Page(v int) *Query {
+	if q.limit == 0 {
+		q.Limit(20)
 	}
-	db.query = db.query.Offset(calculateOffset(v, db.limit))
-	return db
+	q.query = q.query.Offset(calculateOffset(v, q.limit))
+	return q
 }
 
-func (db *Query) Filter(w string) *Query {
-	db.query = db.query.Where(w)
-	return db
+func (q *Query) Filter(w string) *Query {
+	q.query = q.query.Where(w)
+	return q
 }
 
-func (s *Query) Results() ([]*Book, error) {
-	return s.db.execute(toSql(s.query))
+func (q *Query) ToSql() (string, []any, error) {
+	return q.query.ToSql()
 }
 
 func AddedInThePastDays(d int) string {

@@ -2,61 +2,89 @@ package cdb
 
 import (
 	"log"
-	"strings"
+	"path/filepath"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/spf13/viper"
 )
 
 type Lib struct {
-	Name       string
-	Path       string
-	Audiobooks bool
+	db           *DB
+	query        *Query
+	Name         string
+	Path         string
+	Audiobooks   bool
+	isAudiobooks bool
 }
 
-func GetLib(name string) *Lib {
-	lib := &Lib{}
-	err := viper.UnmarshalKey("libraries."+name, lib)
-	if err != nil {
-		log.Fatal(err)
+func NewLib(name, path string, opts ...Opt) *Lib {
+	lib := &Lib{
+		Name: name,
+		Path: path,
+		db:   &DB{},
 	}
-	lib.Name = name
+	for _, opt := range opts {
+		opt(lib)
+	}
 	return lib
 }
 
-func (l *Lib) ConnectDB() (*DB, error) {
-	db, err := configDB(l.Name, l.Path)
+func (l *Lib) GetBooks(q sq.Sqlizer) ([]*Book, error) {
+	stmt, args, err := q.ToSql()
 	if err != nil {
-		return db, err
+		log.Fatal(err)
 	}
+	return l.db.getBooks(stmt, args)
+}
 
-	if l.Audiobooks {
-		err := db.getAudiobookColumns()
-		if err != nil {
-			return db, err
-		}
+func (l *Lib) GetPreferences(q sq.Sqlizer) ([]*Book, error) {
+	stmt, args, err := q.ToSql()
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	return db, nil
+	return l.db.getBooks(stmt, args)
 }
 
 func (l *Lib) NewQuery() *Query {
-	db, err := l.ConnectDB()
+	p := filepath.Join(l.Path, l.Name, metaDB)
+	err := l.db.Connect(p)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	search := &Query{
-		db: db,
+	models := DefaultModels()
+
+	if l.isAudiobooks {
+		am, err := l.db.getAudiobookColumns()
+		if err != nil {
+			log.Fatal(err)
+		}
+		for l, m := range am {
+			models[l] = m
+		}
 	}
 
 	var cols []string
-	for _, m := range db.Models {
+	for _, m := range models {
 		cols = append(cols, m.ToSql())
 	}
 
-	search.query = sq.Select(strings.Join(cols, ",\n")).
-		From("books")
-
-	return search
+	return NewQuery(cols)
 }
+
+//func (lib *Lib) GetSavedSearches() map[string]string {
+//  base := GetDB(lib)
+//  saved := base.GetPreference("savedSearches")
+//  var searches map[string]string
+//  err := json.Unmarshal(saved, &searches)
+//  ur.HandleError("saved searches query", err)
+//  return searches
+//}
+
+//func (lib *Lib) GetHiddenCategories() []string {
+//  base := GetDB(lib.Name)
+//  hidden := base.GetPreference("hiddenCategories")
+//  var cats []string
+//  err := json.Unmarshal(hidden, &cats)
+//  ur.HandleError("hidden categories query", err)
+//  return cats
+//}

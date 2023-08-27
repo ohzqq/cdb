@@ -49,10 +49,10 @@ func DefaultModels() Models {
 }
 
 func AudiobookModels() Models {
-	models := modelMeta
-	models[Duration] = durationModel
-	models[Narrators] = narratorsModel
-
+	models := Models{
+		Duration:  durationModel,
+		Narrators: narratorsModel,
+	}
 	return models
 }
 

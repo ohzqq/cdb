@@ -1,15 +1,15 @@
 package cdb
 
-type Opt func(*DB)
+type Opt func(*Lib)
 
 func IsAudiobooks() Opt {
-	return func(db *DB) {
-		db.isAudiobooks = true
+	return func(l *Lib) {
+		l.isAudiobooks = true
 	}
 }
 
-func PrintQuery() Opt {
-	return func(db *DB) {
-		db.printQuery = true
-	}
-}
+//func PrintQuery() Opt {
+//  return func(db *Lib) {
+//    db.printQuery = true
+//  }
+//}

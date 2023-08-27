@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/ohzqq/cdb"
-	"github.com/ohzqq/cdb/calibredb"
+	"github.com/ohzqq/cdb/command"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -46,9 +46,9 @@ var infoCmd = &cobra.Command{
 }
 
 func setMeta(path, id string, b *cdb.Book) {
-	set := calibredb.SetMetadata(path, id, b.StringMap())
+	set := command.SetMetadata(path, id, b.StringMap())
 
-	set.Opt(calibredb.DryRun())
+	set.Opt(command.DryRun())
 	out, err := set.Run()
 	if err != nil {
 		log.Fatal(err)

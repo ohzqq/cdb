@@ -1,4 +1,4 @@
-package calibredb
+package command
 
 import (
 	"log"

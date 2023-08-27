@@ -1,4 +1,4 @@
-package command
+package cdb
 
 import (
 	"bytes"
@@ -10,8 +10,6 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/ohzqq/cdb"
 )
 
 type Opt func(*Command)
@@ -55,8 +53,8 @@ func checkLib(path string) error {
 		return nil
 	}
 
-	if ok := cdb.FileExist(filepath.Join(path, "metadata.db")); !ok {
-		return cdb.ErrFileNotExist(path)
+	if ok := FileExist(filepath.Join(path, "metadata.db")); !ok {
+		return ErrFileNotExist(path)
 	}
 
 	return nil

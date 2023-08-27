@@ -25,7 +25,7 @@ type Book struct {
 	Formats      string  `db:"formats" yaml:"-"`
 	Identifiers  string  `db:"identifiers" yaml:"identifiers,omitempty"`
 	LastModified string  `db:"last_modified" yaml:"last_modified,omitempty"`
-	ID           int     `db:"id" yaml:"-"`
+	ID           string  `db:"id" yaml:"-"`
 	AuthorSort   string  `db:"author_sort" yaml:"author_sort,omitempty"`
 	Sort         string  `db:"sort" yaml:"sort,omitempty"`
 	Path         string  `db:"path" yaml:"-"`
@@ -88,9 +88,9 @@ func (b *Book) Map() map[string]any {
 	if v := b.LastModified; v != "" {
 		book[LastModified] = v
 	}
-	if v := b.ID; v != 0 {
-		book[ID] = v
-	}
+	//if v := b.ID; v != 0 {
+	//  book[ID] = v
+	//}
 	if v := b.AuthorSort; v != "" {
 		book[AuthorSort] = v
 	}
@@ -115,7 +115,7 @@ func (b *Book) StringMap() map[string]string {
 	for k, v := range b.Map() {
 		switch k {
 		case ID:
-			book[k] = strconv.Itoa(v.(int))
+			//book[k] = strconv.Itoa(v.(int))
 		case SeriesIndex:
 			book[k] = strconv.FormatFloat(v.(float64), 'f', -1, 32)
 		default:

@@ -14,7 +14,7 @@ type Lib struct {
 	isAudiobooks bool
 }
 
-func NewLib(name, path string, opts ...Opt) *Lib {
+func NewLib(name, path string, opts ...Option) *Lib {
 	lib := &Lib{
 		Name: name,
 		Path: path,

@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/ohzqq/cdb"
-	"github.com/ohzqq/cdb/command"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -33,7 +32,7 @@ var infoCmd = &cobra.Command{
 		}
 
 		for _, b := range r {
-			fmt.Printf("%v\n", b)
+			fmt.Printf("%v\n", b.ID)
 			setMeta(lib.Path, "1", b)
 		}
 
@@ -46,9 +45,9 @@ var infoCmd = &cobra.Command{
 }
 
 func setMeta(path, id string, b *cdb.Book) {
-	set := command.SetMetadata(path, id, b.StringMap())
+	set := cdb.SetMetadata(path, id, b.StringMap())
 
-	set.Opt(command.DryRun())
+	set.Opt(cdb.DryRun())
 	out, err := set.Run()
 	if err != nil {
 		log.Fatal(err)

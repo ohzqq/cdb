@@ -1,9 +1,7 @@
-package command
+package cdb
 
 import (
 	"log"
-
-	"github.com/ohzqq/cdb"
 )
 
 func Add(lib, pos string, args ...Opt) *Command {
@@ -22,8 +20,8 @@ func Automerge() Opt {
 }
 
 func Cover(file string) Opt {
-	if ok := cdb.FileExist(file); !ok {
-		err := cdb.ErrFileNotExist(file)
+	if ok := FileExist(file); !ok {
+		err := ErrFileNotExist(file)
 		if err != nil {
 			log.Fatal(err)
 		}

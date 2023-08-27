@@ -1,9 +1,7 @@
-package command
+package cdb
 
 import (
 	"log"
-
-	"github.com/ohzqq/cdb"
 )
 
 // SetMetadata sets book metadata
@@ -18,10 +16,10 @@ func SetMetadata(lib, pos string, meta map[string]string, args ...Opt) *Command 
 
 func Fields(val map[string]string) Opt {
 	var fields []string
-	for _, k := range cdb.AllModels().Editable() {
+	for _, k := range AllModels().Editable() {
 		if v, ok := val[k]; ok {
 			switch k {
-			case cdb.SeriesIndex:
+			case SeriesIndex:
 				if v != "0" || v != "0.0" {
 					fields = append(fields, "--field", k+":"+v)
 				}

@@ -1,8 +1,8 @@
 package cdb
 
-type Opt func(*Lib)
+type Option func(*Lib)
 
-func IsAudiobooks() Opt {
+func IsAudiobooks() Option {
 	return func(l *Lib) {
 		l.isAudiobooks = true
 	}

@@ -1,10 +1,7 @@
 package cdb
 
 import (
-	"log"
 	"strconv"
-
-	"gopkg.in/yaml.v3"
 )
 
 type Book struct {
@@ -21,23 +18,15 @@ type Book struct {
 	Rating       string  `db:"rating" yaml:"rating,omitempty" json:"rating,omitempty"`
 	Publisher    string  `db:"publisher" yaml:"publisher,omitempty" json:"publisher,omitempty"`
 	Languages    string  `db:"languages" yaml:"languages,omitempty" json:"languages,omitempty"`
-	Cover        string  `db:"cover" yaml:"-" json:"cover,omitempty"`
-	Formats      string  `db:"formats" yaml:"-" json:"formats,omitempty"`
+	Cover        string  `db:"cover" yaml:"cover,omitempty" json:"cover,omitempty"`
+	Formats      string  `db:"formats" yaml:"formats,omitempty" json:"formats,omitempty"`
 	Identifiers  string  `db:"identifiers" yaml:"identifiers,omitempty" json:"identifiers,omitempty"`
 	LastModified string  `db:"last_modified" yaml:"last_modified,omitempty" json:"last_modified,omitempty"`
-	ID           int     `db:"id" yaml:"-" yaml:"id,omitempty"`
+	ID           int     `db:"id" yaml:"id,omitempty" yaml:"id,omitempty"`
 	AuthorSort   string  `db:"author_sort" yaml:"author_sort,omitempty" json:"author_sort,omitempty"`
 	Sort         string  `db:"sort" yaml:"sort,omitempty" json:"sort,omitempty"`
-	Path         string  `db:"path" yaml:"-" json:"path,omitempty"`
-	UUID         string  `db:"uuid,omitempty" yaml:"-" json:"uuid,omitempty"`
-}
-
-func (b *Book) ToYAML() []byte {
-	d, err := yaml.Marshal(b)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return d
+	Path         string  `db:"path" yaml:"path,omitempty" json:"path,omitempty"`
+	UUID         string  `db:"uuid,omitempty" yaml:"uuid,omitempty" json:"uuid,omitempty"`
 }
 
 func (b *Book) Map() map[string]any {
@@ -123,13 +112,4 @@ func (b *Book) StringMap() map[string]string {
 		}
 	}
 	return book
-}
-
-func FromYAML(d []byte) *Book {
-	b := &Book{}
-	err := yaml.Unmarshal(d, b)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return b
 }

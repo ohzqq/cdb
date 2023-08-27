@@ -2,6 +2,7 @@ package calibredb
 
 import (
 	"github.com/ohzqq/cdb"
+	"github.com/spf13/viper"
 )
 
 // SetMetadata sets book metadata
@@ -13,14 +14,15 @@ func SetMetadata(lib, pos string, args ...Opt) *Command {
 
 func Fields(val map[string]string) Opt {
 	var fields []string
-	for _, k := range allowedFields {
+
+	models := cdb.DefaultModels()
+	if cdb.GetLib(viper.GetString("lib")).Audiobooks {
+		models = cdb.AudiobookModels()
+	}
+
+	for _, k := range models.Editable() {
 		if v, ok := val[k]; ok {
 			switch k {
-			case cdb.Cover:
-				continue
-			case cdb.Identifiers:
-				//id = v
-				continue
 			case cdb.SeriesIndex:
 				if v != "0" || v != "0.0" {
 					fields = append(fields, "--field", k+":"+v)
@@ -31,22 +33,4 @@ func Fields(val map[string]string) Opt {
 		}
 	}
 	return Flags(fields...)
-}
-
-var allowedFields = []string{
-	"authors",
-	"author_sort",
-	"comments",
-	"identifiers",
-	"languages",
-	"pubdate",
-	"publisher",
-	"rating",
-	"series",
-	"series_index",
-	"sort",
-	"tags",
-	"title",
-	"#narrators",
-	"#duration",
 }

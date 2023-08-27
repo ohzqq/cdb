@@ -40,8 +40,9 @@ func (b *Book) ToYAML() []byte {
 	return d
 }
 
-func (b *Book) StringMap() map[string]string {
-	book := make(map[string]string, 22)
+func (b *Book) Map() map[string]any {
+	book := make(map[string]any, 22)
+
 	if v := b.Title; v != "" {
 		book[Title] = v
 	}
@@ -88,7 +89,7 @@ func (b *Book) StringMap() map[string]string {
 		book[LastModified] = v
 	}
 	if v := b.ID; v != 0 {
-		book[ID] = strconv.Itoa(v)
+		book[ID] = v
 	}
 	if v := b.AuthorSort; v != "" {
 		book[AuthorSort] = v
@@ -103,9 +104,24 @@ func (b *Book) StringMap() map[string]string {
 		book[UUID] = v
 	}
 	if v := b.SeriesIndex; v >= 0 {
-		book[SeriesIndex] = strconv.FormatFloat(v, 'f', -1, 32)
+		book[SeriesIndex] = v
 	}
 
+	return book
+}
+
+func (b *Book) StringMap() map[string]string {
+	book := make(map[string]string, 22)
+	for k, v := range b.Map() {
+		switch k {
+		case ID:
+			book[k] = strconv.Itoa(v.(int))
+		case SeriesIndex:
+			book[k] = strconv.FormatFloat(v.(float64), 'f', -1, 32)
+		default:
+			book[k] = v.(string)
+		}
+	}
 	return book
 }
 

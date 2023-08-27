@@ -1,15 +1,17 @@
 package calibredb
 
 import (
-	"github.com/spf13/viper"
+	"log"
 )
 
 func Remove(lib string, pos ...string) *Command {
-	cmd := New(lib)
-	cmd.Opt(Cmd("remove"), PositionalArgs(pos...))
-	if viper.IsSet("calibre.cdb.remove") {
-		cmd.Opt(Flags(viper.GetStringSlice("calibre.cdb.remove")...))
+	cmd, err := NewCommand(lib)
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	cmd.Opt(Cmd("remove"), PositionalArgs(pos...))
+
 	return cmd
 }
 

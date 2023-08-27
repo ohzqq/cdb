@@ -3,16 +3,15 @@ package calibredb
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"net"
 	"net/url"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/ohzqq/cdb"
-	"github.com/spf13/viper"
 )
 
 type Opt func(*Command)
@@ -26,14 +25,41 @@ type Command struct {
 	dryRun     bool
 }
 
-func New(lib string, args ...Opt) *Command {
+func NewCommand(path string, args ...Opt) (*Command, error) {
 	cmd := &Command{}
-	args = append(args, WithLib(lib))
+
+	err := checkLib(path)
+	if err != nil {
+		return cmd, err
+	}
+
+	cmd.flags = append(cmd.flags, "--with-library", path)
+
 	for _, fn := range args {
 		fn(cmd)
 	}
 
-	return cmd
+	return cmd, nil
+}
+
+func checkLib(path string) error {
+	uri, err := url.Parse(path)
+	if err != nil {
+		return err
+	}
+
+	if uri.Scheme != "" {
+		if !SrvIsOnline(uri) {
+			return fmt.Errorf("server is offline")
+		}
+		return nil
+	}
+
+	if ok := cdb.FileExist(filepath.Join(path, "metadata.db")); !ok {
+		return cdb.ErrFileNotExist(path)
+	}
+
+	return nil
 }
 
 func Cmd(cmd string) Opt {
@@ -72,35 +98,12 @@ func DryRun() Opt {
 	}
 }
 
-func WithLib(name string) Opt {
-	flags := []string{
-		"--with-library",
-	}
-	lib := cdb.GetLib(name)
+func WithUsername(name string) Opt {
+	return Flags("--username", name)
+}
 
-	var uri *url.URL
-	var err error
-	if cal := viper.GetString("calibre.url"); cal != "" {
-		uri, err = url.Parse(cal)
-		if err != nil {
-			log.Fatal(err)
-		}
-		uri.Fragment = lib.Name
-	}
-
-	switch SrvIsOnline(uri) {
-	case false:
-		flags = append(flags, lib.Path)
-	default:
-		flags = append(flags, uri.String())
-		if u := viper.GetString("calibre.username"); u != "" {
-			flags = append(flags, "--username", u)
-		}
-		if p := viper.GetString("calibre.password"); p != "" {
-			flags = append(flags, "--password", p)
-		}
-	}
-	return Flags(flags...)
+func WithPassword(pass string) Opt {
+	return Flags("--password", pass)
 }
 
 func (c *Command) Build() *exec.Cmd {
@@ -126,7 +129,8 @@ func (c *Command) Run() (string, error) {
 	}
 
 	cmd := c.Build()
-	if viper.GetBool("dry-run") {
+
+	if c.dryRun {
 		return cmd.String(), nil
 	}
 
@@ -143,7 +147,7 @@ func (c *Command) Run() (string, error) {
 		return "", fmt.Errorf("%v finished with error: %v\n", c.CdbCmd, stderr.String())
 	}
 
-	if viper.GetBool("verbose") {
+	if c.verbose {
 		fmt.Println(cmd.String())
 		fmt.Println(stdout.String())
 	}
@@ -169,5 +173,6 @@ func SrvIsOnline(u *url.URL) bool {
 		return false
 	}
 	defer conn.Close()
+
 	return true
 }

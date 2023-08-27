@@ -1,26 +1,24 @@
 package calibredb
 
 import (
+	"log"
+
 	"github.com/ohzqq/cdb"
-	"github.com/spf13/viper"
 )
 
 // SetMetadata sets book metadata
-func SetMetadata(lib, pos string, args ...Opt) *Command {
-	cmd := New(lib, args...)
-	cmd.Opt(Cmd("set_metadata"), PositionalArgs(pos))
+func SetMetadata(lib, pos string, meta map[string]string, args ...Opt) *Command {
+	cmd, err := NewCommand(lib, args...)
+	if err != nil {
+		log.Fatal(err)
+	}
+	cmd.Opt(Cmd("set_metadata"), PositionalArgs(pos), Fields(meta))
 	return cmd
 }
 
 func Fields(val map[string]string) Opt {
 	var fields []string
-
-	models := cdb.DefaultModels()
-	if cdb.GetLib(viper.GetString("lib")).Audiobooks {
-		models = cdb.AudiobookModels()
-	}
-
-	for _, k := range models.Editable() {
+	for _, k := range cdb.AllModels().Editable() {
 		if v, ok := val[k]; ok {
 			switch k {
 			case cdb.SeriesIndex:

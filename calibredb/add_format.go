@@ -1,14 +1,16 @@
 package calibredb
 
-import "github.com/spf13/viper"
+import (
+	"log"
+)
 
 // AddFormat adds a format to an existing book
 func AddFormat(lib, id, pos string, args ...Opt) *Command {
-	cmd := New(lib, args...)
-	cmd.Opt(Cmd("add_format"), PositionalArgs(id, pos))
-	if viper.IsSet("calibre.cdb.add_format") {
-		cmd.Opt(Flags(viper.GetStringSlice("calibre.cdb.add_format")...))
+	cmd, err := NewCommand(lib, args...)
+	if err != nil {
+		log.Fatal(err)
 	}
+	cmd.Opt(Cmd("add_format"), PositionalArgs(id, pos))
 	return cmd
 }
 

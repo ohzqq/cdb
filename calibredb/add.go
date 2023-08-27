@@ -4,15 +4,16 @@ import (
 	"log"
 
 	"github.com/ohzqq/cdb"
-	"github.com/spf13/viper"
 )
 
 func Add(lib, pos string, args ...Opt) *Command {
-	cmd := New(lib, args...)
-	cmd.Opt(Cmd("add"), PositionalArgs(pos))
-	if viper.IsSet("calibre.cdb.add") {
-		cmd.Opt(Flags(viper.GetStringSlice("calibre.cdb.add")...))
+	cmd, err := NewCommand(lib, args...)
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	cmd.Opt(Cmd("add"), PositionalArgs(pos))
+
 	return cmd
 }
 

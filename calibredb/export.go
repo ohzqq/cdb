@@ -1,14 +1,16 @@
 package calibredb
 
-import "github.com/spf13/viper"
+import "log"
 
 // Export saves a book to disk
 func Export(lib, pos string, args ...Opt) *Command {
-	cmd := New(lib, args...)
-	cmd.Opt(Cmd("export"), PositionalArgs(pos))
-	if viper.IsSet("calibre.cdb.export") {
-		cmd.Opt(Flags(viper.GetStringSlice("calibre.cdb.export")...))
+	cmd, err := NewCommand(lib, args...)
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	cmd.Opt(Cmd("export"), PositionalArgs(pos))
+
 	return cmd
 }
 

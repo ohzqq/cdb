@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/ohzqq/cdb"
+	"github.com/ohzqq/cdb/calibredb"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -33,17 +34,31 @@ var infoCmd = &cobra.Command{
 
 		for _, b := range r {
 			fmt.Printf("%v\n", b)
+			setMeta(lib.Path, "1", b)
 		}
 
-		prefs, err := lib.GetPreference(cdb.FieldMetadata)
-		if err != nil {
-			log.Fatal(err)
-		}
-		//for _, p := range prefs {
-		fmt.Printf("All Libraries: %v\n", string(prefs))
+		//c, err := calibredb.NewCommand(testURL, calibredb.DryRun())
+		//if err != nil {
+		//log.Fatal(err)
 		//}
+		//c.Run()
 	},
 }
+
+func setMeta(path, id string, b *cdb.Book) {
+	set := calibredb.SetMetadata(path, id, b.StringMap())
+
+	set.Opt(calibredb.DryRun())
+	out, err := set.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if out != "" {
+		fmt.Println(out)
+	}
+}
+
+var testURL = "http://localhost:8080/"
 
 func init() {
 	rootCmd.AddCommand(infoCmd)

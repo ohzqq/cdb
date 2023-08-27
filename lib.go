@@ -36,12 +36,19 @@ func (l *Lib) GetBooks(q sq.Sqlizer) ([]*Book, error) {
 	return l.db.getBooks(stmt, args)
 }
 
-func (l *Lib) GetPreferences(q sq.Sqlizer) ([]*Book, error) {
-	stmt, args, err := q.ToSql()
+func (l *Lib) GetPreference(c string) ([]byte, error) {
+	col := "JSON(val) " + c
+
+	sel := sq.Select(col).
+		From("preferences").
+		Where(sq.Eq{"key": c})
+
+	stmt, args, err := sel.ToSql()
 	if err != nil {
-		log.Fatal(err)
+		return []byte{}, err
 	}
-	return l.db.getBooks(stmt, args)
+
+	return l.db.getPreferences(stmt, args...)
 }
 
 func (l *Lib) NewQuery() *Query {

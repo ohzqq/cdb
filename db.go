@@ -123,6 +123,17 @@ func (db *DB) getAudiobookColumns() (Models, error) {
 	return models, nil
 }
 
+func (db *DB) getPreferences(stmt string, args ...any) ([]byte, error) {
+	db.mtx.Lock()
+	defer db.mtx.Unlock()
+
+	var data []byte
+	row := db.db.QueryRowx(stmt, args...)
+	row.Scan(&data)
+
+	return data, nil
+}
+
 func ErrFileNotExist(path string) error {
 	if !FileExist(path) {
 		return fmt.Errorf("%v does not exist or cannot be found, check the path in the config, error: \n", path)

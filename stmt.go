@@ -75,25 +75,7 @@ func calculateOffset(page, limit int) uint64 {
 	return uint64(cur * limit)
 }
 
-func GetPreferences(col ...string) (string, []any) {
-	if len(col) == 0 {
-		col = PreferenceColumns
-	}
-
-	args := make([]any, len(col))
-	for i, c := range col {
-		args[i] = c
-		col[i] = "JSON(val) " + c
-	}
-
-	sel := sq.Select(col...).
-		From("preferences").
-		Where(sq.Eq{"key": args})
-
-	return toSql(sel)
-}
-
-var PreferenceColumns = []string{
+var Preferences = []string{
 	SavedSearches,
 	DisplayFields,
 	HiddenCategories,
@@ -106,51 +88,3 @@ const (
 	HiddenCategories = "tag_browser_hidden_categories"
 	FieldMetadata    = "field_metadata"
 )
-
-const customColumnsFieldMetaSql = `
-SELECT
-JSON_GROUP_OBJECT("#" || label,
-(SELECT
-JSON_OBJECT(
-'category_sort', IFNULL(JSON_EXTRACT(val, "$." || "#" || label || ".category_sort"), ''),
-'column', IFNULL(JSON_EXTRACT(val, "$." || "#" || label || ".column"), 'uuid'),
-'is_category',
-CASE JSON_EXTRACT(val, "$." || "#" || label || ".is_category")
-WHEN true then JSON("true")
-ELSE JSON("false")
-END,
-'is_custom', 
-CASE JSON_EXTRACT(val, "$." || "#" || label || ".is_custom")
-WHEN true then JSON("true")
-ELSE JSON("false")
-END,
-'is_editable', 
-CASE JSON_EXTRACT(val, "$." || "#" || label || ".is_editable")
-WHEN true then JSON("true")
-ELSE JSON("false")
-END,
-'is_multiple', 
-CASE JSON_EXTRACT(val, "$." || "#" || label || ".is_multiple")
-WHEN '{}' THEN JSON("false")
-ELSE JSON("true")
-END,
-'is_names',
-CASE JSON_EXTRACT(val, "$." || "#" || label || ".is_multiple.ui_to_list")
-WHEN "&" THEN JSON("true")
-ELSE JSON("false")
-END,
-'join_table', IFNULL(
-(SELECT 
-'books_' || JSON_EXTRACT(val, "$." || "#" || label || ".table") || '_link'
-WHERE JSON_EXTRACT(val, "$." || "#" || label || ".table") IS NOT NULL
-AND JSON_EXTRACT(val, "$." || "#" || label || ".is_category") = true
-), ''),
-'label', "#" || JSON_EXTRACT(val, "$." || "#" || label || ".label"),
-'link_column', IFNULL(JSON_EXTRACT(val, "$." || "#" || label || ".link_column"), ''),
-'name', IFNULL(lower(JSON_EXTRACT(val, "$." || "#" || label || ".name")), label),
-'table', IFNULL(JSON_EXTRACT(val, "$." || "#" || label || ".table"), '')
-)
-FROM preferences 
-WHERE key = 'field_metadata')) fieldMeta
-FROM custom_columns
-`

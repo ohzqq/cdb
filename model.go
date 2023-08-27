@@ -57,11 +57,11 @@ func AudiobookModels() Models {
 }
 
 func AllModels() Models {
-	return AudiobookModels()
-}
-
-func GetModel(label string) Model {
-	return modelMeta[label]
+	models := DefaultModels()
+	for l, m := range AudiobookModels() {
+		models[l] = m
+	}
+	return models
 }
 
 func (m Model) ToSql() string {

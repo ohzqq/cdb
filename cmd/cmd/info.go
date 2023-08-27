@@ -11,8 +11,9 @@ import (
 
 // infoCmd represents the info command
 var infoCmd = &cobra.Command{
-	Use:   "info",
-	Short: "info about your calibre libs",
+	Use:    "info",
+	Short:  "info about your calibre libs",
+	PreRun: debug,
 	Run: func(cmd *cobra.Command, args []string) {
 		//fmt.Printf("default Lib: %v\n", cdb.DefaultLibrary())
 		//stmt, arg := cdb.GetPreferences()
@@ -33,6 +34,14 @@ var infoCmd = &cobra.Command{
 		for _, b := range r {
 			fmt.Printf("%v\n", b)
 		}
+
+		prefs, err := lib.GetPreference(cdb.FieldMetadata)
+		if err != nil {
+			log.Fatal(err)
+		}
+		//for _, p := range prefs {
+		fmt.Printf("All Libraries: %v\n", string(prefs))
+		//}
 	},
 }
 

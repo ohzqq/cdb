@@ -23,6 +23,7 @@ type Command struct {
 	positional []string
 	tmp        *os.File
 	verbose    bool
+	dryRun     bool
 }
 
 func New(lib string, args ...Opt) *Command {
@@ -62,6 +63,12 @@ func PositionalArgs(args ...string) Opt {
 func Verbose() Opt {
 	return func(cmd *Command) {
 		cmd.verbose = true
+	}
+}
+
+func DryRun() Opt {
+	return func(cmd *Command) {
+		cmd.dryRun = true
 	}
 }
 

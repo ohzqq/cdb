@@ -38,19 +38,16 @@ var metaShowCmd = &cobra.Command{
 				if err != nil {
 					log.Fatal(err)
 				}
+				defer f.Close()
+
 				err = yaml.NewEncoder(f).Encode(b)
 				if err != nil {
 					log.Fatal(err)
 				}
-			} else {
-				//var buf bytes.Buffer
-				//err := yaml.NewEncoder(&buf).Encode(b)
-				//if err != nil {
-				//log.Fatal(err)
-				//}
-				d := b.ToYAML()
-				fmt.Println(string(d))
 			}
+
+			d := b.ToYAML()
+			println(string(d))
 		}
 	},
 }

@@ -50,7 +50,7 @@ func ToLowercase() Opt {
 	return Flags("--to-lowercase")
 }
 
-func Formats(formats string) Opt {
+func ExportFormats(formats string) Opt {
 	return Flags("--formats", formats)
 }
 

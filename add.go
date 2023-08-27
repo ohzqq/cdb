@@ -19,7 +19,7 @@ func Automerge() Opt {
 	return Flags("--automerge")
 }
 
-func Cover(file string) Opt {
+func AddCover(file string) Opt {
 	if ok := FileExist(file); !ok {
 		err := ErrFileNotExist(file)
 		if err != nil {

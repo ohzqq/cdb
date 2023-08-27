@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -44,12 +43,13 @@ var metaShowCmd = &cobra.Command{
 					log.Fatal(err)
 				}
 			} else {
-				var buf bytes.Buffer
-				err := yaml.NewEncoder(&buf).Encode(b)
-				if err != nil {
-					log.Fatal(err)
-				}
-				fmt.Println(buf.String())
+				//var buf bytes.Buffer
+				//err := yaml.NewEncoder(&buf).Encode(b)
+				//if err != nil {
+				//log.Fatal(err)
+				//}
+				d := b.ToYAML()
+				fmt.Println(string(d))
 			}
 		}
 	},

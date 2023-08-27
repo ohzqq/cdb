@@ -40,12 +40,14 @@ var metaSetCmd = &cobra.Command{
 
 func setMeta(id, file string) {
 	set := calibredb.SetMetadata(viper.GetString("lib"), id)
-	f, err := os.Open(file)
+	f, err := os.ReadFile(file)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	set.Opt(calibredb.Fields(decodeMeta(f)))
+	b := cdb.FromYAML(f)
+
+	set.Opt(calibredb.Fields(b.StringMap()))
 	out, err := set.Run()
 	if err != nil {
 		log.Fatal(err)

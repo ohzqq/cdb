@@ -17,6 +17,12 @@ var rootCmd = &cobra.Command{
 	Short: "work with calibre's db",
 }
 
+func debug(cmd *cobra.Command, args []string) {
+	if cmd.Flags().Changed("debug") {
+		log.SetFlags(log.LstdFlags | log.Lshortfile)
+	}
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
@@ -36,6 +42,9 @@ func init() {
 
 	rootCmd.PersistentFlags().Bool("dry-run", false, "show generated command")
 	viper.BindPFlag("dry-run", rootCmd.PersistentFlags().Lookup("dry-run"))
+
+	rootCmd.PersistentFlags().Bool("debug", false, "debug commands")
+	rootCmd.Flags().MarkHidden("debug")
 
 }
 

@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/danielgtaylor/casing"
 	"github.com/ohzqq/cdb"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -14,9 +15,10 @@ import (
 
 // metaShowCmd represents the show command
 var metaShowCmd = &cobra.Command{
-	Use:   "show [ID]",
-	Short: "show a book's metadata",
-	Args:  cobra.ExactArgs(1),
+	Use:    "show [ID]",
+	Short:  "show a book's metadata",
+	Args:   cobra.ExactArgs(1),
+	PreRun: debug,
 	Run: func(cmd *cobra.Command, args []string) {
 		id := args[0]
 		lib := cdb.GetLib(viper.GetString("lib"))
@@ -26,9 +28,14 @@ var metaShowCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
+		if len(r) < 1 {
+			fmt.Printf("no book with id %s\n", id)
+			os.Exit(1)
+		}
+
 		for _, b := range r {
 			if cmd.Flags().Changed("save") {
-				f, err := os.Create(metaFile + ".yaml")
+				f, err := os.Create(casing.Snake(b.Title) + ".yaml")
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -50,5 +57,5 @@ var metaShowCmd = &cobra.Command{
 
 func init() {
 	metaCmd.AddCommand(metaShowCmd)
-	metaShowCmd.Flags().StringVarP(&metaFile, "save", "s", "meta", "save meta to disk")
+	metaShowCmd.Flags().BoolP("save", "s", false, "save meta to disk")
 }

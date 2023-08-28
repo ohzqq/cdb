@@ -14,7 +14,7 @@ import (
 
 type Opt func(*Command)
 
-type Flag func(...string) []string
+type Flag func() []string
 
 type Command struct {
 	CdbCmd     string
@@ -27,7 +27,7 @@ type Command struct {
 
 type CalibredbCmd func() (string, []string)
 
-func Calibredb(path string, global []Opt, cdb CalibredbCmd, pos ...string) (*Command, error) {
+func Calibredb(path string, opts []Opt, global []Flag, cdb CalibredbCmd, pos ...string) (*Command, error) {
 	cmd := &Command{
 		positional: pos,
 	}
@@ -39,7 +39,11 @@ func Calibredb(path string, global []Opt, cdb CalibredbCmd, pos ...string) (*Com
 
 	cmd.flags = append(cmd.flags, "--with-library", path)
 
-	for _, fn := range global {
+	for _, flag := range global {
+		cmd.flags = append(cmd.flags, flag()...)
+	}
+
+	for _, fn := range opts {
 		fn(cmd)
 	}
 
@@ -123,12 +127,16 @@ func DryRun() Opt {
 	}
 }
 
-func Username(name string) []string {
-	return []string{"--username", name}
+func Username(name string) Flag {
+	return func() []string {
+		return []string{"--username", name}
+	}
 }
 
-func Password(pass string) []string {
-	return []string{"--password", pass}
+func Password(pass string) Flag {
+	return func() []string {
+		return []string{"--password", pass}
+	}
 }
 
 func WithUsername(name string) Opt {

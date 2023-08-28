@@ -14,6 +14,8 @@ import (
 
 type Opt func(*Command)
 
+type Flag func(...string) string
+
 type Command struct {
 	CdbCmd     string
 	flags      []string
@@ -21,6 +23,28 @@ type Command struct {
 	tmp        *os.File
 	verbose    bool
 	dryRun     bool
+}
+
+type CalibredbCmd func() string
+
+func Calibredb(path string, global []Flag, cdb CalibredbCmd, pos ...string) (*Command, error) {
+	cmd := &Command{
+		positional: pos,
+		CdbCmd:     cdb(),
+	}
+
+	err := checkLib(path)
+	if err != nil {
+		return cmd, err
+	}
+
+	cmd.flags = append(cmd.flags, "--with-library", path)
+
+	for _, fn := range global {
+		fn(cmd)
+	}
+
+	return cmd, nil
 }
 
 func NewCommand(path string, args ...Opt) (*Command, error) {

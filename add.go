@@ -4,7 +4,7 @@ import (
 	"log"
 )
 
-func Add(lib, pos string, args ...Opt) *Command {
+func AddCmd(lib, pos string, args ...Opt) *Command {
 	cmd, err := NewCommand(lib, args...)
 	if err != nil {
 		log.Fatal(err)

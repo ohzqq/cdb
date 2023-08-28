@@ -1,0 +1,28 @@
+---
+Add: 
+  Automerge: bool
+  Duplicates: bool
+  Empty: bool
+AddFromFolders:
+  Add: bool
+  Ignore: bool
+  OneBookPerDirectory: bool
+  Recurse:  bool
+AddFormat: 
+  DontReplace: bool
+EmbedMetadata: 
+  OnlyFormats: bool
+Export: 
+  DontAsciiize:  bool
+  DontSaveCover: bool
+  DontUpdateMetadata:  bool
+  DontWriteOpf: bool
+  Formats:
+  ReplaceWhitespace: bool
+  SingleDir: bool
+  Timefmt: string
+  ToDir: string
+  ToLowercase: bool
+  Template:
+Remove: 
+  Permanent: bool

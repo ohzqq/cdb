@@ -16,7 +16,7 @@ func AddCmd(lib, pos string, args ...Opt) *Command {
 }
 
 func Automerge() Opt {
-	return Flags("--automerge")
+	return SetFlags("--automerge")
 }
 
 func AddCover(file string) Opt {
@@ -26,13 +26,13 @@ func AddCover(file string) Opt {
 			log.Fatal(err)
 		}
 	}
-	return Flags("--cover", file)
+	return SetFlags("--cover", file)
 }
 
 func Duplicates() Opt {
-	return Flags("--duplicates")
+	return SetFlags("--duplicates")
 }
 
 func Empty() Opt {
-	return Flags("--empty")
+	return SetFlags("--empty")
 }

@@ -4,6 +4,22 @@ import (
 	"log"
 )
 
+func ShowMetadata(flags ...Flag) CalibredbCmd {
+	return func() (string, []string) {
+		var f []string
+		for _, flag := range flags {
+			f = append(f, flag()...)
+		}
+		return "show_metadata", f
+	}
+}
+
+func AsOpf() Flag {
+	return func() []string {
+		return []string{"--as-opf"}
+	}
+}
+
 // SetMetadata sets book metadata
 func SetMetadata(lib, pos string, meta map[string]string, args ...Opt) *Command {
 	cmd, err := NewCommand(lib, args...)
@@ -28,5 +44,5 @@ func Fields(val map[string]string) Opt {
 			fields = append(fields, "--field", k+":"+v)
 		}
 	}
-	return Flags(fields...)
+	return SetFlags(fields...)
 }

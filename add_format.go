@@ -15,5 +15,5 @@ func AddFormat(lib, id, pos string, args ...Opt) *Command {
 }
 
 func DontReplace() Opt {
-	return Flags("--dont-replace")
+	return SetFlags("--dont-replace")
 }

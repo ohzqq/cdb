@@ -15,53 +15,53 @@ func Export(lib, pos string, args ...Opt) *Command {
 }
 
 func All() Opt {
-	return Flags("--all")
+	return SetFlags("--all")
 }
 
 func DontAsciize() Opt {
-	return Flags("--dont-asciize")
+	return SetFlags("--dont-asciize")
 }
 
 func DontSaveCover() Opt {
-	return Flags("--dont-save-cover")
+	return SetFlags("--dont-save-cover")
 }
 
 func DontUpdateMetadata() Opt {
-	return Flags("--dont-update-metadata")
+	return SetFlags("--dont-update-metadata")
 }
 
 func DontWriteOpf() Opt {
-	return Flags("--dont-write-opf")
+	return SetFlags("--dont-write-opf")
 }
 
 func Progress() Opt {
-	return Flags("--progress")
+	return SetFlags("--progress")
 }
 
 func ReplaceWhitespace() Opt {
-	return Flags("--replace-whitespace")
+	return SetFlags("--replace-whitespace")
 }
 
 func SingleDir() Opt {
-	return Flags("--single-dir")
+	return SetFlags("--single-dir")
 }
 
 func ToLowercase() Opt {
-	return Flags("--to-lowercase")
+	return SetFlags("--to-lowercase")
 }
 
 func ExportFormats(formats string) Opt {
-	return Flags("--formats", formats)
+	return SetFlags("--formats", formats)
 }
 
 func Template(template string) Opt {
-	return Flags("--template", template)
+	return SetFlags("--template", template)
 }
 
 func TimeFmt(format string) Opt {
-	return Flags("--timefmt", format)
+	return SetFlags("--timefmt", format)
 }
 
 func ToDir(dir string) Opt {
-	return Flags("--to-dir", dir)
+	return SetFlags("--to-dir", dir)
 }

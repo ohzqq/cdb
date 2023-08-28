@@ -14,7 +14,7 @@ import (
 
 type Opt func(*Command)
 
-type Flag func(...string) string
+type Flag func() []string
 
 type Command struct {
 	CdbCmd     string
@@ -25,12 +25,11 @@ type Command struct {
 	dryRun     bool
 }
 
-type CalibredbCmd func() string
+type CalibredbCmd func() (string, []string)
 
-func Calibredb(path string, global []Flag, cdb CalibredbCmd, pos ...string) (*Command, error) {
+func Calibredb(path string, global []Opt, cdb CalibredbCmd, pos ...string) (*Command, error) {
 	cmd := &Command{
 		positional: pos,
-		CdbCmd:     cdb(),
 	}
 
 	err := checkLib(path)
@@ -43,6 +42,10 @@ func Calibredb(path string, global []Flag, cdb CalibredbCmd, pos ...string) (*Co
 	for _, fn := range global {
 		fn(cmd)
 	}
+
+	c, f := cdb()
+	cmd.CdbCmd = c
+	cmd.flags = append(cmd.flags, f...)
 
 	return cmd, nil
 }
@@ -96,7 +99,7 @@ func (c *Command) Opt(opts ...Opt) {
 	}
 }
 
-func Flags(flag ...string) Opt {
+func SetFlags(flag ...string) Opt {
 	return func(c *Command) {
 		c.flags = append(c.flags, flag...)
 	}
@@ -120,12 +123,24 @@ func DryRun() Opt {
 	}
 }
 
+func Username(name string) Flag {
+	return func() []string {
+		return []string{"--username", name}
+	}
+}
+
+func Password(pass string) Flag {
+	return func() []string {
+		return []string{"--password", pass}
+	}
+}
+
 func WithUsername(name string) Opt {
-	return Flags("--username", name)
+	return SetFlags("--username", name)
 }
 
 func WithPassword(pass string) Opt {
-	return Flags("--password", pass)
+	return SetFlags("--password", pass)
 }
 
 func (c *Command) Build() *exec.Cmd {
@@ -181,7 +196,8 @@ func (c *Command) Run() (string, error) {
 		case "add":
 			sp := strings.Split(out, ": ")
 			output = sp[1]
-		case "search", "saved_searches":
+		default:
+			//case "search", "saved_searches":
 			output = out
 		}
 	}

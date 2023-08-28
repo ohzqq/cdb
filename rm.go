@@ -16,5 +16,5 @@ func Remove(lib string, pos ...string) *Command {
 }
 
 func Permanent() Opt {
-	return Flags("--permanent")
+	return SetFlags("--permanent")
 }

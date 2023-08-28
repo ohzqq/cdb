@@ -4,6 +4,19 @@ import (
 	"log"
 )
 
+type showMeta struct {
+	asOPF bool
+}
+
+func ShowMeta() *showMeta {
+	return &showMeta{}
+}
+
+func (cmd *showMeta) AsOPF() *showMeta {
+	cmd.asOPF = true
+	return cmd
+}
+
 func ShowMetadata(flags ...Flag) CalibredbCmd {
 	return func() (string, []string) {
 		var f []string
@@ -12,10 +25,6 @@ func ShowMetadata(flags ...Flag) CalibredbCmd {
 		}
 		return "show_metadata", f
 	}
-}
-
-func AsOpf() []string {
-	return []string{"--as-opf"}
 }
 
 // SetMetadata sets book metadata

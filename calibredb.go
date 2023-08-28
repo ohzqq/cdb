@@ -14,8 +14,6 @@ import (
 
 type Opt func(*Command)
 
-type Flag func() []string
-
 type Command struct {
 	CdbCmd     string
 	flags      []string
@@ -26,6 +24,30 @@ type Command struct {
 }
 
 type CalibredbCmd func() (string, []string)
+
+type CaldbCmd int
+
+//const (
+//  ShowMeta CaldbCmd = iota // show_metadata
+//  SetMeta                  // set_metadata
+//)
+
+func (cmd CaldbCmd) ListFlags() []string {
+	switch cmd {
+	case ShowMeta:
+		return []string{"--as-opf"}
+	default:
+		return []string{}
+	}
+}
+
+func ParseFlags(flags ...Flag) []string {
+	var f []string
+	for _, flag := range flags {
+		f = append(f, flag()...)
+	}
+	return f
+}
 
 func Calibredb(path string, opts []Opt, global []Flag, cdb CalibredbCmd, pos ...string) (*Command, error) {
 	cmd := &Command{
@@ -124,18 +146,6 @@ func Verbose() Opt {
 func DryRun() Opt {
 	return func(cmd *Command) {
 		cmd.dryRun = true
-	}
-}
-
-func Username(name string) Flag {
-	return func() []string {
-		return []string{"--username", name}
-	}
-}
-
-func Password(pass string) Flag {
-	return func() []string {
-		return []string{"--password", pass}
 	}
 }
 

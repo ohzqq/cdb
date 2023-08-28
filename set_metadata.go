@@ -15,7 +15,7 @@ func ShowMetadata(flags ...Flag) CalibredbCmd {
 }
 
 func AsOpf() Flag {
-	return func() []string {
+	return func(...string) []string {
 		return []string{"--as-opf"}
 	}
 }

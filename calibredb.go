@@ -14,7 +14,7 @@ import (
 
 type Opt func(*Command)
 
-type Flag func() []string
+type Flag func(...string) []string
 
 type Command struct {
 	CdbCmd     string
@@ -123,16 +123,12 @@ func DryRun() Opt {
 	}
 }
 
-func Username(name string) Flag {
-	return func() []string {
-		return []string{"--username", name}
-	}
+func Username(name string) []string {
+	return []string{"--username", name}
 }
 
-func Password(pass string) Flag {
-	return func() []string {
-		return []string{"--password", pass}
-	}
+func Password(pass string) []string {
+	return []string{"--password", pass}
 }
 
 func WithUsername(name string) Opt {

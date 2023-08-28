@@ -1,52 +1,41 @@
 ---
 Add: 
-  Args:
-    Files: []string
+  Args: Files=[]string
   Automerge: bool
   Duplicates: bool
   Empty: bool
-AddFromFolders:
-  Add: bool
-  Ignore: bool
+  Add: string
+  Ignore: string
   OneBookPerDirectory: bool
   Recurse:  bool
 AddFormat: 
-  Args:
-    ID: string
-    File: string
+  Args: ID=string,File=string
   DontReplace: bool
 EmbedMetadata: 
   OnlyFormats: bool
 Export: 
-  Args:
-    ID: []string
+  Args: ID=[]string
   DontAsciiize:  bool
   DontSaveCover: bool
   DontUpdateMetadata:  bool
   DontWriteOpf: bool
-  Formats:
+  Formats: string
   ReplaceWhitespace: bool
   SingleDir: bool
   Timefmt: string
   ToDir: string
   ToLowercase: bool
-  Template:
+  Template: string
 Remove: 
   Permanent: bool
 RemoveFormat:
-  Args:
-    ID: string
-    Fmt: string
+  Args: ID=string,Fmt=string
 SetMetadata:
-  Args:
-    ID: string
-  Field: []string
+  Args: ID=string
+  Field: "string"
   ListFields: bool
-SavedSearches_List:
-SavedSearches_Add:
-  Args:
-    Name: string
-    Expression: string
-SavedSearches_Remove:
-  Args:
-    Name: string
+SavedSearchesList:
+SavedSearchesAdd:
+  Args: Name=string,Expression=string
+SavedSearchesRemove:
+  Args: Name=string

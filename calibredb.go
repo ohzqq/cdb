@@ -25,21 +25,21 @@ type Command struct {
 
 type CalibredbCmd func() (string, []string)
 
-type CaldbCmd int
+type CaldbCmd string
 
 //const (
 //  ShowMeta CaldbCmd = iota // show_metadata
 //  SetMeta                  // set_metadata
 //)
 
-func (cmd CaldbCmd) ListFlags() []string {
-	switch cmd {
-	case ShowMeta:
-		return []string{"--as-opf"}
-	default:
-		return []string{}
-	}
-}
+//func (cmd CaldbCmd) ListFlags() []string {
+//  switch cmd {
+//  case ShowMeta:
+//    return []string{"--as-opf"}
+//  default:
+//    return []string{}
+//  }
+//}
 
 func ParseFlags(flags ...Flag) []string {
 	var f []string
@@ -147,6 +147,14 @@ func DryRun() Opt {
 	return func(cmd *Command) {
 		cmd.dryRun = true
 	}
+}
+
+func (c *Command) SetFlags(flags ...string) {
+	c.flags = append(c.flags, flags...)
+}
+
+func (c *Command) SetPosition(args ...string) {
+	c.positional = append(c.positional, args...)
 }
 
 func WithUsername(name string) Opt {

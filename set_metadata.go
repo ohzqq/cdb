@@ -14,10 +14,8 @@ func ShowMetadata(flags ...Flag) CalibredbCmd {
 	}
 }
 
-func AsOpf() Flag {
-	return func(...string) []string {
-		return []string{"--as-opf"}
-	}
+func AsOpf(...string) []string {
+	return []string{"--as-opf"}
 }
 
 // SetMetadata sets book metadata

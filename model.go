@@ -27,7 +27,7 @@ const (
 	Series        = "series"
 	SeriesIndex   = "series_index"
 	Sort          = "sort"
-	SortAs        = "sort"
+	SortAs        = "sort_as"
 	Tags          = "tags"
 	Timestamp     = "timestamp"
 	Title         = "title"

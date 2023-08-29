@@ -147,6 +147,9 @@ func (b *Book) sharedMap() map[string]string {
 	if v := b.LastModified; v != "" {
 		book[LastModified] = v
 	}
+	if v := b.Timestamp; v != "" {
+		book[Timestamp] = v
+	}
 	if v := b.AuthorSort; v != "" {
 		book[AuthorSort] = v
 	}

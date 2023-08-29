@@ -2,6 +2,7 @@ package cdb
 
 import (
 	"strconv"
+	"strings"
 )
 
 // Book represents a book record.
@@ -34,20 +35,60 @@ type Book struct {
 func (b *Book) Map() map[string]any {
 	book := make(map[string]any, 22)
 
+	for l, v := range b.sharedMap() {
+		book[l] = v
+	}
+
+	if v := b.Authors; v != "" {
+		book[Authors] = splitNames(v)
+	}
+	if v := b.Narrators; v != "" {
+		book[Narrators] = splitNames(v)
+	}
+	if v := b.Tags; v != "" {
+		book[Tags] = splitCat(v)
+	}
+	if v := b.Languages; v != "" {
+		book[Languages] = splitCat(v)
+	}
+	if v := b.Formats; v != "" {
+		book[Formats] = splitCat(v)
+	}
+	if v := b.Identifiers; v != "" {
+		book[Identifiers] = splitCat(v)
+	}
+	if v := b.Rating; v != "" {
+		i, err := strconv.Atoi(v)
+		if err != nil {
+			i = 0
+		}
+		book[Rating] = i
+	}
+	if v := b.ID; v != 0 {
+		book[ID] = v
+	}
+	if v := b.SeriesIndex; v >= 0 {
+		book[SeriesIndex] = v
+	}
+	return book
+}
+
+func splitNames(v string) []string {
+	return strings.Split(v, " & ")
+}
+
+func splitCat(v string) []string {
+	return strings.Split(v, ", ")
+}
+
+func (b *Book) sharedMap() map[string]string {
+	book := make(map[string]string, 13)
+
 	if v := b.Title; v != "" {
 		book[Title] = v
 	}
-	if v := b.Authors; v != "" {
-		book[Authors] = v
-	}
-	if v := b.Narrators; v != "" {
-		book[Narrators] = v
-	}
 	if v := b.Series; v != "" {
 		book[Series] = v
-	}
-	if v := b.Tags; v != "" {
-		book[Tags] = v
 	}
 	if v := b.Pubdate; v != "" {
 		book[Pubdate] = v
@@ -58,29 +99,14 @@ func (b *Book) Map() map[string]any {
 	if v := b.Comments; v != "" {
 		book[Comments] = v
 	}
-	if v := b.Rating; v != "" {
-		book[Rating] = v
-	}
 	if v := b.Publisher; v != "" {
 		book[Publisher] = v
-	}
-	if v := b.Languages; v != "" {
-		book[Languages] = v
 	}
 	if v := b.Cover; v != "" {
 		book[Cover] = v
 	}
-	if v := b.Formats; v != "" {
-		book[Formats] = v
-	}
-	if v := b.Identifiers; v != "" {
-		book[Identifiers] = v
-	}
 	if v := b.LastModified; v != "" {
 		book[LastModified] = v
-	}
-	if v := b.ID; v != 0 {
-		book[ID] = v
 	}
 	if v := b.AuthorSort; v != "" {
 		book[AuthorSort] = v
@@ -94,25 +120,44 @@ func (b *Book) Map() map[string]any {
 	if v := b.UUID; v != "" {
 		book[UUID] = v
 	}
-	if v := b.SeriesIndex; v >= 0 {
-		book[SeriesIndex] = v
-	}
-
 	return book
 }
 
 // StringMap converts a book record to map[string]string.
 func (b *Book) StringMap() map[string]string {
 	book := make(map[string]string, 22)
-	for k, v := range b.Map() {
-		switch k {
-		case ID:
-			book[k] = strconv.Itoa(v.(int))
-		case SeriesIndex:
-			book[k] = strconv.FormatFloat(v.(float64), 'f', -1, 32)
-		default:
-			book[k] = v.(string)
-		}
+
+	for l, v := range b.sharedMap() {
+		book[l] = v
 	}
+
+	if v := b.Authors; v != "" {
+		book[Authors] = v
+	}
+	if v := b.Narrators; v != "" {
+		book[Narrators] = v
+	}
+	if v := b.Tags; v != "" {
+		book[Tags] = v
+	}
+	if v := b.Languages; v != "" {
+		book[Languages] = v
+	}
+	if v := b.Formats; v != "" {
+		book[Formats] = v
+	}
+	if v := b.Identifiers; v != "" {
+		book[Identifiers] = v
+	}
+	if v := b.Rating; v != "" {
+		book[Rating] = v
+	}
+	if v := b.ID; v != 0 {
+		book[ID] = strconv.Itoa(v)
+	}
+	if v := b.SeriesIndex; v >= 0 {
+		book[SeriesIndex] = strconv.FormatFloat(v, 'f', -1, 64)
+	}
+
 	return book
 }

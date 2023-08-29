@@ -73,6 +73,45 @@ func (b *Book) Map() map[string]any {
 	return book
 }
 
+// StringMap converts a book record to map[string]string.
+func (b *Book) StringMap() map[string]string {
+	book := make(map[string]string, 22)
+
+	for l, v := range b.sharedMap() {
+		book[l] = v
+	}
+
+	if v := b.Authors; v != "" {
+		book[Authors] = v
+	}
+	if v := b.Narrators; v != "" {
+		book[Narrators] = v
+	}
+	if v := b.Tags; v != "" {
+		book[Tags] = v
+	}
+	if v := b.Languages; v != "" {
+		book[Languages] = v
+	}
+	if v := b.Formats; v != "" {
+		book[Formats] = v
+	}
+	if v := b.Identifiers; v != "" {
+		book[Identifiers] = v
+	}
+	if v := b.Rating; v != "" {
+		book[Rating] = v
+	}
+	if v := b.ID; v != 0 {
+		book[ID] = strconv.Itoa(v)
+	}
+	if v := b.SeriesIndex; v >= 0 {
+		book[SeriesIndex] = strconv.FormatFloat(v, 'f', -1, 64)
+	}
+
+	return book
+}
+
 func splitNames(v string) []string {
 	return strings.Split(v, " & ")
 }
@@ -120,44 +159,5 @@ func (b *Book) sharedMap() map[string]string {
 	if v := b.UUID; v != "" {
 		book[UUID] = v
 	}
-	return book
-}
-
-// StringMap converts a book record to map[string]string.
-func (b *Book) StringMap() map[string]string {
-	book := make(map[string]string, 22)
-
-	for l, v := range b.sharedMap() {
-		book[l] = v
-	}
-
-	if v := b.Authors; v != "" {
-		book[Authors] = v
-	}
-	if v := b.Narrators; v != "" {
-		book[Narrators] = v
-	}
-	if v := b.Tags; v != "" {
-		book[Tags] = v
-	}
-	if v := b.Languages; v != "" {
-		book[Languages] = v
-	}
-	if v := b.Formats; v != "" {
-		book[Formats] = v
-	}
-	if v := b.Identifiers; v != "" {
-		book[Identifiers] = v
-	}
-	if v := b.Rating; v != "" {
-		book[Rating] = v
-	}
-	if v := b.ID; v != 0 {
-		book[ID] = strconv.Itoa(v)
-	}
-	if v := b.SeriesIndex; v >= 0 {
-		book[SeriesIndex] = strconv.FormatFloat(v, 'f', -1, 64)
-	}
-
 	return book
 }

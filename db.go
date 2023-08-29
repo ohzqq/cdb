@@ -12,17 +12,23 @@ import (
 )
 
 const (
-	sqliteOpts   = "?cache=shared&mode=ro"
-	sqlitePrefix = `file:`
-	metaDB       = `metadata.db`
+	sqliteOpts       = "?cache=shared&mode=ro"
+	sqlitePrefix     = `file:`
+	metaDB           = `metadata.db`
+	SavedSearches    = "saved_searches"
+	DisplayFields    = "book_display_fields"
+	HiddenCategories = "tag_browser_hidden_categories"
+	FieldMetadata    = "field_metadata"
 )
 
+// DB holds the database connection.
 type DB struct {
 	db         *sqlx.DB
 	printQuery bool
 	mtx        sync.Mutex
 }
 
+// Connect opens the database connection.
 func (db *DB) Connect(p string) error {
 	if db.IsConnected() {
 		return nil
@@ -42,6 +48,7 @@ func (db *DB) Connect(p string) error {
 	return nil
 }
 
+// IsConnected checks if the database is connected.
 func (db DB) IsConnected() bool {
 	return db.db != nil
 }

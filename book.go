@@ -4,6 +4,7 @@ import (
 	"strconv"
 )
 
+// Book represents a book record.
 type Book struct {
 	Title        string  `db:"title" yaml:"title" json:"title"`
 	Authors      string  `db:"authors" yaml:"authors,omitempty" json:"authors,omitempty"`
@@ -29,6 +30,7 @@ type Book struct {
 	UUID         string  `db:"uuid,omitempty" yaml:"uuid,omitempty" json:"uuid,omitempty"`
 }
 
+// Map converts a book record to map[string]any.
 func (b *Book) Map() map[string]any {
 	book := make(map[string]any, 22)
 
@@ -99,6 +101,7 @@ func (b *Book) Map() map[string]any {
 	return book
 }
 
+// StringMap converts a book record to map[string]string.
 func (b *Book) StringMap() map[string]string {
 	book := make(map[string]string, 22)
 	for k, v := range b.Map() {

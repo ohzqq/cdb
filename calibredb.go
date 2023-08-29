@@ -49,10 +49,8 @@ func ParseFlags(flags ...Flag) []string {
 	return f
 }
 
-func Calibredb(path string, opts []Opt, global []Flag, cdb CalibredbCmd, pos ...string) (*Command, error) {
-	cmd := &Command{
-		positional: pos,
-	}
+func Calibredb(path string, opts []Opt, global []Flag) (*Command, error) {
+	cmd := &Command{}
 
 	err := checkLib(path)
 	if err != nil {
@@ -68,10 +66,6 @@ func Calibredb(path string, opts []Opt, global []Flag, cdb CalibredbCmd, pos ...
 	for _, fn := range opts {
 		fn(cmd)
 	}
-
-	c, f := cdb()
-	cmd.CdbCmd = c
-	cmd.flags = append(cmd.flags, f...)
 
 	return cmd, nil
 }

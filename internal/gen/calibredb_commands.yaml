@@ -34,6 +34,9 @@ SetMetadata:
   Args: ID=string
   Field: "string"
   ListFields: bool
+ShowMetadata:
+  Args: ID=string
+  AsOpf: bool
 SavedSearchesList:
 SavedSearchesAdd:
   Args: Name=string,Expression=string

@@ -17,13 +17,8 @@ func (c *SetMetadata) ListFields() *SetMetadata {
 	return c
 }
 
-type AddFormat struct {
+type SavedSearchesAdd struct {
 	*Command
-}
-
-func (c *AddFormat) DontReplace() *AddFormat {
-	c.SetFlags("--dont_replace")
-	return c
 }
 
 type EmbedMetadata struct {
@@ -45,6 +40,19 @@ func (c *Remove) Permanent() *Remove {
 }
 
 type RemoveFormat struct {
+	*Command
+}
+
+type ShowMetadata struct {
+	*Command
+}
+
+func (c *ShowMetadata) AsOpf() *ShowMetadata {
+	c.SetFlags("--as_opf")
+	return c
+}
+
+type SavedSearchesList struct {
 	*Command
 }
 
@@ -88,6 +96,15 @@ func (c *Add) OneBookPerDirectory() *Add {
 
 func (c *Add) Recurse() *Add {
 	c.SetFlags("--recurse")
+	return c
+}
+
+type AddFormat struct {
+	*Command
+}
+
+func (c *AddFormat) DontReplace() *AddFormat {
+	c.SetFlags("--dont_replace")
 	return c
 }
 
@@ -148,13 +165,5 @@ func (c *Export) ToDir(v string) *Export {
 func (c *Export) ToLowercase() *Export {
 	c.SetFlags("--to_lowercase")
 	return c
-}
-
-type SavedSearchesList struct {
-	*Command
-}
-
-type SavedSearchesAdd struct {
-	*Command
-}
-
+}	
+	

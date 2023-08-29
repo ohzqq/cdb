@@ -6,84 +6,24 @@ package cdb
 
 func ListCommands() []string {
 	return []string{
+		"embed_metadata",
+		"remove",
+		"show_metadata",
+		"saved_searches remove",
 		"add",
-		"add_format",
+		"export",
 		"remove_format",
+		"set_metadata",
 		"saved_searches list",
 		"saved_searches add",
-		"saved_searches remove",
-		"embed_metadata",
-		"export",
-		"remove",
-		"set_metadata",
+		"add_format",
 	}
 }
 
-
-func (c *Command) Add(files ...string) *Add {
-	c.SetPositional(files...)
-	c.CdbCmd = "add"
-	cmd := &Add{
-		Command: c,
-	}
-	return cmd
-}
-
-func (c *Command) AddFormat(id string, file string) *AddFormat {
-	c.SetPositional(id, file)
-	c.CdbCmd = "add_format"
-	cmd := &AddFormat{
-		Command: c,
-	}
-	return cmd
-}
-
-func (c *Command) RemoveFormat(id string, fmt string) *RemoveFormat {
-	c.SetPositional(id, fmt)
-	c.CdbCmd = "remove_format"
-	cmd := &RemoveFormat{
-		Command: c,
-	}
-	return cmd
-}
 
 func (c *Command) SavedSearchesList() *SavedSearchesList {
 	c.CdbCmd = "saved_searches list"
 	cmd := &SavedSearchesList{
-		Command: c,
-	}
-	return cmd
-}
-
-func (c *Command) EmbedMetadata() *EmbedMetadata {
-	c.CdbCmd = "embed_metadata"
-	cmd := &EmbedMetadata{
-		Command: c,
-	}
-	return cmd
-}
-
-func (c *Command) Export(id ...string) *Export {
-	c.SetPositional(id...)
-	c.CdbCmd = "export"
-	cmd := &Export{
-		Command: c,
-	}
-	return cmd
-}
-
-func (c *Command) Remove() *Remove {
-	c.CdbCmd = "remove"
-	cmd := &Remove{
-		Command: c,
-	}
-	return cmd
-}
-
-func (c *Command) SetMetadata(id string) *SetMetadata {
-	c.SetPositional(id)
-	c.CdbCmd = "set_metadata"
-	cmd := &SetMetadata{
 		Command: c,
 	}
 	return cmd
@@ -98,10 +38,80 @@ func (c *Command) SavedSearchesAdd(name string, expression string) *SavedSearche
 	return cmd
 }
 
+func (c *Command) AddFormat(id string, file string) *AddFormat {
+	c.SetPositional(id, file)
+	c.CdbCmd = "add_format"
+	cmd := &AddFormat{
+		Command: c,
+	}
+	return cmd
+}
+
+func (c *Command) Export(id ...string) *Export {
+	c.SetPositional(id...)
+	c.CdbCmd = "export"
+	cmd := &Export{
+		Command: c,
+	}
+	return cmd
+}
+
+func (c *Command) RemoveFormat(id string, fmt string) *RemoveFormat {
+	c.SetPositional(id, fmt)
+	c.CdbCmd = "remove_format"
+	cmd := &RemoveFormat{
+		Command: c,
+	}
+	return cmd
+}
+
+func (c *Command) SetMetadata(id string) *SetMetadata {
+	c.SetPositional(id)
+	c.CdbCmd = "set_metadata"
+	cmd := &SetMetadata{
+		Command: c,
+	}
+	return cmd
+}
+
 func (c *Command) SavedSearchesRemove(name string) *SavedSearchesRemove {
 	c.SetPositional(name)
 	c.CdbCmd = "saved_searches remove"
 	cmd := &SavedSearchesRemove{
+		Command: c,
+	}
+	return cmd
+}
+
+func (c *Command) Add(files ...string) *Add {
+	c.SetPositional(files...)
+	c.CdbCmd = "add"
+	cmd := &Add{
+		Command: c,
+	}
+	return cmd
+}
+
+func (c *Command) EmbedMetadata() *EmbedMetadata {
+	c.CdbCmd = "embed_metadata"
+	cmd := &EmbedMetadata{
+		Command: c,
+	}
+	return cmd
+}
+
+func (c *Command) Remove() *Remove {
+	c.CdbCmd = "remove"
+	cmd := &Remove{
+		Command: c,
+	}
+	return cmd
+}
+
+func (c *Command) ShowMetadata(id string) *ShowMetadata {
+	c.SetPositional(id)
+	c.CdbCmd = "show_metadata"
+	cmd := &ShowMetadata{
 		Command: c,
 	}
 	return cmd

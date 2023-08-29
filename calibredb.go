@@ -11,8 +11,10 @@ import (
 	"time"
 )
 
+// CmdOpt sets options for the calibredb command.
 type CmdOpt func(*Command)
 
+// Command represents a calibredb command.
 type Command struct {
 	CdbCmd     string
 	flags      []string
@@ -21,10 +23,11 @@ type Command struct {
 	dryRun     bool
 }
 
+// Calibredb initializes a command. Path or URL to a library is required.
 func Calibredb(path string, opts ...CmdOpt) (*Command, error) {
 	cmd := &Command{}
 
-	err := checkLib(path)
+	err := CheckLib(path)
 	if err != nil {
 		return cmd, err
 	}
@@ -38,44 +41,48 @@ func Calibredb(path string, opts ...CmdOpt) (*Command, error) {
 	return cmd, nil
 }
 
+// Verbose prints the built command and stdout.
 func Verbose() CmdOpt {
 	return func(cmd *Command) {
 		cmd.verbose = true
 	}
 }
 
+// DryRun prints the built command.
 func DryRun() CmdOpt {
 	return func(cmd *Command) {
 		cmd.dryRun = true
 	}
 }
 
-func (c *Command) Authenticate(user, pass string) *Command {
-	c.SetFlags("--username", user)
-	c.SetFlags("--password", pass)
-	return c
+// Authenticate is used to pass credentials to the calibre content server.
+func Authenticate(user, pass string) CmdOpt {
+	return func(c *Command) {
+		c.SetFlags("--username", user)
+		c.SetFlags("--password", pass)
+	}
 }
 
+// SetFlags sets the flags for the calibredb command.
 func (c *Command) SetFlags(flags ...string) {
 	c.flags = append(c.flags, flags...)
 }
 
+// SetArgs sets the positional arguments for the calibredb command.
 func (c *Command) SetArgs(args ...string) {
 	c.positional = append(c.positional, args...)
 }
 
+// Build compiles the calibredb command to be run.
 func (c *Command) Build() *exec.Cmd {
-	return exec.Command("calibredb", c.parseArgs()...)
-}
-
-func (c *Command) parseArgs() []string {
 	var args []string
 	args = append(args, c.CdbCmd)
 	args = append(args, c.flags...)
 	args = append(args, c.positional...)
-	return args
+	return exec.Command("calibredb", args...)
 }
 
+// Run executes the calibredb command.
 func (c *Command) Run() (string, error) {
 	cmd := c.Build()
 
@@ -115,6 +122,7 @@ func (c *Command) Run() (string, error) {
 	return output, nil
 }
 
+// SrvIsOnline tests if the calibredb content server is available.
 func SrvIsOnline(u *url.URL) bool {
 	timeout := 1 * time.Second
 	conn, err := net.DialTimeout("tcp", u.Host, timeout)
@@ -126,7 +134,9 @@ func SrvIsOnline(u *url.URL) bool {
 	return true
 }
 
-func checkLib(path string) error {
+// CheckLib checks that the calibre database exists or the content server is
+// online.
+func CheckLib(path string) error {
 	uri, err := url.Parse(path)
 	if err != nil {
 		return err

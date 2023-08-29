@@ -112,6 +112,7 @@ var cmdList = template.Must(
 	template.New("cmdList").
 		Funcs(tmplFuncs).
 		Parse(`
+// ListCommands lists the available calibredb commands.
 func ListCommands() []string {
 return []string{
 {{range $name := .Commands -}}
@@ -129,11 +130,13 @@ var cmdBuilder = template.Must(
 {{range $name := .Commands -}}
 {{$cmd := $commands.GetCommand . -}}
 
+// {{.}} represents 'calibredb {{snake $name}}'.
 type {{.}} struct {
 	*Command
 }
 
 {{range $flag, $val := $cmd.Flags}}
+// {{$flag}} sets the --{{snake $flag}} {{with ne $val "bool"}}[{{$val}}] {{end}}flag for 'calibredb {{snake $name}}'.
 func (c *{{$name}}) {{$flag -}} 
 	({{with ne $val "bool"}}v {{$val}}{{end}}) *{{$name}} {
 	c.SetFlags("--{{snake $flag}}"{{with ne $val "bool"}}, v{{end}})
@@ -151,6 +154,7 @@ var cmdFunc = template.Must(
 {{range $name := .Commands -}}
 {{$cmd := $commands.GetCommand .}}
 
+// {{.}} initializes the {{snake .}} command{{with $cmd.Params}} with the {{.}} paramaters{{end}}.
 func (c *Command) {{.}} ({{- with $cmd.Params -}}{{.}}{{- end -}})  *{{.}} {
 	{{with $cmd.Args -}}
 		c.SetArgs({{.}})

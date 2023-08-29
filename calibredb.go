@@ -153,7 +153,7 @@ func (c *Command) SetFlags(flags ...string) {
 	c.flags = append(c.flags, flags...)
 }
 
-func (c *Command) SetPosition(args ...string) {
+func (c *Command) SetPositional(args ...string) {
 	c.positional = append(c.positional, args...)
 }
 

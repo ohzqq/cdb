@@ -158,7 +158,7 @@ func ListCommands() []string {
 return []string{
 {{range $name := .Commands -}}
 "{{snake .}}",
-{{end}}
+{{end -}}
 }
 }
 `))
@@ -167,43 +167,43 @@ var cmdBuilder = template.Must(
 	template.New("cmdBuilder").
 		Funcs(tmplFuncs).
 		Parse(`
-{{$commands := .}}
-{{range $name := .Commands}}
-{{$cmd := $commands.GetCommand .}}
+{{- $commands := . -}}
+{{range $name := .Commands -}}
+{{$cmd := $commands.GetCommand . -}}
 
 type {{.}} struct {
 	*Command
 }
 
-	{{range $flag, $val := $cmd.Flags}}
-		func (c *{{$name}}) {{$flag -}} 
-		({{with ne $val "bool"}}v {{$val}}{{end}}) *{{$name}} {
-		c.SetFlags("--{{snake $flag}}"{{with ne $val "bool"}}, v{{end}})
-	}	
-	{{end}}
-{{end}}
+{{range $flag, $val := $cmd.Flags}}
+func (c *{{$name}}) {{$flag -}} 
+	({{with ne $val "bool"}}v {{$val}}{{end}}) *{{$name}} {
+	c.SetFlags("--{{snake $flag}}"{{with ne $val "bool"}}, v{{end}})
+	return c
+}	
+	{{end -}}
+{{end -}}
 `))
 
 var cmdFunc = template.Must(
 	template.New("cmdFunc").
 		Funcs(tmplFuncs).
 		Parse(`
-{{$commands := .}}
-{{range $name := .Commands}}
+{{- $commands := . -}}
+{{range $name := .Commands -}}
 {{$cmd := $commands.GetCommand .}}
 
 func (c *Command) {{.}} ({{- with $cmd.Params -}}{{.}}{{- end -}})  *{{.}} {
-	{{with $cmd.Args}}
+	{{with $cmd.Args -}}
 		c.SetPositional({{.}})
-	{{end}}
+	{{end -}}
+	c.CdbCmd = "{{snake .}}"
 	cmd := &{{.}}{
 		Command: c,
-		CdbCmd: "{{snake .}}",
 	}
-
 	return cmd
 }
-{{end}}
+{{end -}}
 `))
 
 func (c commands) CommandsConst() string {

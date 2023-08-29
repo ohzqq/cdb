@@ -27,29 +27,7 @@ type CalibredbCmd func() (string, []string)
 
 type CaldbCmd string
 
-//const (
-//  ShowMeta CaldbCmd = iota // show_metadata
-//  SetMeta                  // set_metadata
-//)
-
-//func (cmd CaldbCmd) ListFlags() []string {
-//  switch cmd {
-//  case ShowMeta:
-//    return []string{"--as-opf"}
-//  default:
-//    return []string{}
-//  }
-//}
-
-func ParseFlags(flags ...Flag) []string {
-	var f []string
-	for _, flag := range flags {
-		f = append(f, flag()...)
-	}
-	return f
-}
-
-func Calibredb(path string, opts []Opt, global []Flag) (*Command, error) {
+func Calibredb(path string, opts ...Opt) (*Command, error) {
 	cmd := &Command{}
 
 	err := checkLib(path)
@@ -58,29 +36,8 @@ func Calibredb(path string, opts []Opt, global []Flag) (*Command, error) {
 	}
 
 	cmd.flags = append(cmd.flags, "--with-library", path)
-
-	for _, flag := range global {
-		cmd.flags = append(cmd.flags, flag()...)
-	}
 
 	for _, fn := range opts {
-		fn(cmd)
-	}
-
-	return cmd, nil
-}
-
-func NewCommand(path string, args ...Opt) (*Command, error) {
-	cmd := &Command{}
-
-	err := checkLib(path)
-	if err != nil {
-		return cmd, err
-	}
-
-	cmd.flags = append(cmd.flags, "--with-library", path)
-
-	for _, fn := range args {
 		fn(cmd)
 	}
 
@@ -107,28 +64,16 @@ func checkLib(path string) error {
 	return nil
 }
 
-func Cmd(cmd string) Opt {
-	return func(c *Command) {
-		c.CdbCmd = cmd
-	}
-}
-
 func (c *Command) Opt(opts ...Opt) {
 	for _, fn := range opts {
 		fn(c)
 	}
 }
 
-func SetFlags(flag ...string) Opt {
-	return func(c *Command) {
-		c.flags = append(c.flags, flag...)
-	}
-}
-
-func PositionalArgs(args ...string) Opt {
-	return func(c *Command) {
-		c.positional = append(c.positional, args...)
-	}
+func (c *Command) Authenticate(user, pass string) *Command {
+	c.SetFlags("--username", user)
+	c.SetFlags("--password", pass)
+	return c
 }
 
 func Verbose() Opt {
@@ -149,14 +94,6 @@ func (c *Command) SetFlags(flags ...string) {
 
 func (c *Command) SetPositional(args ...string) {
 	c.positional = append(c.positional, args...)
-}
-
-func WithUsername(name string) Opt {
-	return SetFlags("--username", name)
-}
-
-func WithPassword(pass string) Opt {
-	return SetFlags("--password", pass)
 }
 
 func (c *Command) Build() *exec.Cmd {

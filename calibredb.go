@@ -5,29 +5,23 @@ import (
 	"fmt"
 	"net"
 	"net/url"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
 )
 
-type Opt func(*Command)
+type CmdOpt func(*Command)
 
 type Command struct {
 	CdbCmd     string
 	flags      []string
 	positional []string
-	tmp        *os.File
 	verbose    bool
 	dryRun     bool
 }
 
-type CalibredbCmd func() (string, []string)
-
-type CaldbCmd string
-
-func Calibredb(path string, opts ...Opt) (*Command, error) {
+func Calibredb(path string, opts ...CmdOpt) (*Command, error) {
 	cmd := &Command{}
 
 	err := checkLib(path)
@@ -44,29 +38,15 @@ func Calibredb(path string, opts ...Opt) (*Command, error) {
 	return cmd, nil
 }
 
-func checkLib(path string) error {
-	uri, err := url.Parse(path)
-	if err != nil {
-		return err
+func Verbose() CmdOpt {
+	return func(cmd *Command) {
+		cmd.verbose = true
 	}
-
-	if uri.Scheme != "" {
-		if !SrvIsOnline(uri) {
-			return fmt.Errorf("server is offline")
-		}
-		return nil
-	}
-
-	if ok := FileExist(filepath.Join(path, "metadata.db")); !ok {
-		return ErrFileNotExist(path)
-	}
-
-	return nil
 }
 
-func (c *Command) Opt(opts ...Opt) {
-	for _, fn := range opts {
-		fn(c)
+func DryRun() CmdOpt {
+	return func(cmd *Command) {
+		cmd.dryRun = true
 	}
 }
 
@@ -76,31 +56,19 @@ func (c *Command) Authenticate(user, pass string) *Command {
 	return c
 }
 
-func Verbose() Opt {
-	return func(cmd *Command) {
-		cmd.verbose = true
-	}
-}
-
-func DryRun() Opt {
-	return func(cmd *Command) {
-		cmd.dryRun = true
-	}
-}
-
 func (c *Command) SetFlags(flags ...string) {
 	c.flags = append(c.flags, flags...)
 }
 
-func (c *Command) SetPositional(args ...string) {
+func (c *Command) SetArgs(args ...string) {
 	c.positional = append(c.positional, args...)
 }
 
 func (c *Command) Build() *exec.Cmd {
-	return exec.Command("calibredb", c.ParseArgs()...)
+	return exec.Command("calibredb", c.parseArgs()...)
 }
 
-func (c *Command) ParseArgs() []string {
+func (c *Command) parseArgs() []string {
 	var args []string
 	args = append(args, c.CdbCmd)
 	args = append(args, c.flags...)
@@ -108,16 +76,7 @@ func (c *Command) ParseArgs() []string {
 	return args
 }
 
-func (c *Command) DryRun() {
-	cmd := c.Build()
-	fmt.Println(cmd.String())
-}
-
 func (c *Command) Run() (string, error) {
-	if c.tmp != nil {
-		defer os.Remove(c.tmp.Name())
-	}
-
 	cmd := c.Build()
 
 	if c.dryRun {
@@ -150,7 +109,6 @@ func (c *Command) Run() (string, error) {
 			sp := strings.Split(out, ": ")
 			output = sp[1]
 		default:
-			//case "search", "saved_searches":
 			output = out
 		}
 	}
@@ -166,4 +124,24 @@ func SrvIsOnline(u *url.URL) bool {
 	defer conn.Close()
 
 	return true
+}
+
+func checkLib(path string) error {
+	uri, err := url.Parse(path)
+	if err != nil {
+		return err
+	}
+
+	if uri.Scheme != "" {
+		if !SrvIsOnline(uri) {
+			return fmt.Errorf("server is offline")
+		}
+		return nil
+	}
+
+	if ok := FileExist(filepath.Join(path, "metadata.db")); !ok {
+		return ErrFileNotExist(path)
+	}
+
+	return nil
 }

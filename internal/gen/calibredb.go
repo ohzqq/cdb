@@ -70,48 +70,6 @@ func (c commands) GetCommand(name string) command {
 	return cmd
 }
 
-func (c commands) CommandsString() string {
-	fn := func(cmd string) string {
-		var b strings.Builder
-
-		b.WriteByte('"')
-		if strings.HasPrefix(cmd, "SavedSearches") {
-			b.WriteString("saved_searches ")
-			b.WriteString(strings.ToLower(strings.TrimPrefix(cmd, "SavedSearches")))
-		} else {
-			b.WriteString(casing.Snake(cmd))
-		}
-
-		b.WriteByte('"')
-		return b.String()
-	}
-
-	return c.CommandsSwitch("Cmd", "string", fn)
-}
-
-func (c commands) CommandsSwitch(cmd string, rt string, cr func(string) string) string {
-	cmds := c.Commands()
-	var b strings.Builder
-
-	b.WriteString("func (c CaldbCmd) " + cmd + "() " + rt + " {")
-	b.WriteByte('\n')
-	b.WriteString("switch c {")
-	b.WriteByte('\n')
-
-	for _, cmd := range cmds {
-		b.WriteString("case " + cmd + ":")
-		b.WriteByte('\n')
-		b.WriteString(`return ` + cr(cmd))
-		b.WriteByte('\n')
-	}
-
-	b.WriteString("}\n")
-	b.WriteString(`return ""`)
-	b.WriteString("\n}\n")
-
-	return b.String()
-}
-
 func (c commands) CommandFuncs() string {
 	var buf bytes.Buffer
 	err := cmdFunc.Execute(&buf, c)
@@ -195,7 +153,7 @@ var cmdFunc = template.Must(
 
 func (c *Command) {{.}} ({{- with $cmd.Params -}}{{.}}{{- end -}})  *{{.}} {
 	{{with $cmd.Args -}}
-		c.SetPositional({{.}})
+		c.SetArgs({{.}})
 	{{end -}}
 	c.CdbCmd = "{{snake .}}"
 	cmd := &{{.}}{
@@ -205,21 +163,3 @@ func (c *Command) {{.}} ({{- with $cmd.Params -}}{{.}}{{- end -}})  *{{.}} {
 }
 {{end -}}
 `))
-
-func (c commands) CommandsConst() string {
-	cmds := c.Commands()
-	var b strings.Builder
-
-	b.WriteString("const (\n")
-	b.WriteString(cmds[0])
-	b.WriteString(" CaldbCmd = iota\n")
-
-	for _, cmd := range cmds[1:] {
-		b.WriteString(cmd)
-		b.WriteByte('\n')
-	}
-
-	b.WriteString(")\n")
-
-	return b.String()
-}

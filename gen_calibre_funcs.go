@@ -3,20 +3,6 @@
 
 package cdb
 
-type SetMetadata struct {
-	*Command
-}
-
-func (c *SetMetadata) Field(v string) *SetMetadata {
-	c.SetFlags("--field", v)
-	return c
-}
-
-func (c *SetMetadata) ListFields() *SetMetadata {
-	c.SetFlags("--list_fields")
-	return c
-}
-
 type SavedSearchesAdd struct {
 	*Command
 }
@@ -41,6 +27,20 @@ func (c *Remove) Permanent() *Remove {
 
 type RemoveFormat struct {
 	*Command
+}
+
+type SetMetadata struct {
+	*Command
+}
+
+func (c *SetMetadata) Field(v string) *SetMetadata {
+	c.SetFlags("--field", v)
+	return c
+}
+
+func (c *SetMetadata) ListFields() *SetMetadata {
+	c.SetFlags("--list_fields")
+	return c
 }
 
 type ShowMetadata struct {

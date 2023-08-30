@@ -1,6 +1,7 @@
 package cdb
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 )
@@ -9,13 +10,13 @@ import (
 type Book struct {
 	Title        string  `db:"title" yaml:"title" json:"title"`
 	Authors      string  `db:"authors" yaml:"authors,omitempty" json:"authors,omitempty"`
-	Narrators    string  `db:"#narrators" yaml:"#narrators,omitempty" json:"#narrators,omitempty"`
+	Narrators    string  `db:"#narrators" yaml:"#narrators,omitempty" json:"narrators,omitempty"`
 	Series       string  `db:"series" yaml:"series,omitempty" json:"series,omitempty"`
 	SeriesIndex  float64 `db:"series_index" yaml:"series_index,omitempty" json:"series_index,omitempty"`
 	Tags         string  `db:"tags" yaml:"tags,omitempty" json:"tags,omitempty"`
 	Pubdate      string  `db:"pubdate" yaml:"pubdate,omitempty" json:"pubdate,omitempty"`
 	Timestamp    string  `db:"timestamp" yaml:"timestamp,omitempty" json:"timestamp,omitempty"`
-	Duration     string  `db:"#duration" yaml:"#duration,omitempty" json:"#duration,omitempty"`
+	Duration     string  `db:"#duration" yaml:"#duration,omitempty" json:"duration,omitempty"`
 	Comments     string  `db:"comments" yaml:"comments,omitempty" json:"comments,omitempty"`
 	Rating       string  `db:"rating" yaml:"rating,omitempty" json:"rating,omitempty"`
 	Publisher    string  `db:"publisher" yaml:"publisher,omitempty" json:"publisher,omitempty"`
@@ -29,6 +30,22 @@ type Book struct {
 	Sort         string  `db:"sort" yaml:"sort,omitempty" json:"sort,omitempty"`
 	Path         string  `db:"path" yaml:"path,omitempty" json:"path,omitempty"`
 	UUID         string  `db:"uuid,omitempty" yaml:"uuid,omitempty" json:"uuid,omitempty"`
+}
+
+func (b *Book) MarshalJSON() ([]byte, error) {
+	return json.Marshal(b.Map())
+}
+
+func (b *Book) CalibredbFlags() []string {
+	var flags []string
+	book := b.StringMap()
+	for _, f := range AllModels().Editable() {
+		if m, ok := book[f]; ok {
+			println(f)
+			flags = append(flags, m)
+		}
+	}
+	return flags
 }
 
 // Map converts a book record to map[string]any.

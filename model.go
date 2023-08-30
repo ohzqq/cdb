@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
+	"golang.org/x/exp/slices"
 )
 
 // Models is a map of Model.
@@ -78,10 +79,10 @@ func AllModels() Models {
 // ToSql returns a model's sql expression as a string.
 func (m Model) ToSql() string {
 	switch {
-	case m.isManyToOne():
+	case slices.Contains(manyToOneModels, m.Label), m.Label == Duration:
 		stmt, _ := manyToOne(m)
 		return stmt
-	case m.isManyToMany():
+	case slices.Contains(manyToManyModels, m.Label), m.Label == Narrators:
 		stmt, _ := manyToMany(m)
 		return stmt
 	case m.Label == Cover:
@@ -91,39 +92,6 @@ func (m Model) ToSql() string {
 		stmt, _ := booksColumn(m)
 		return stmt
 	}
-}
-
-func (m Model) isOneToOne() bool {
-	for _, l := range oneToOneModels {
-		if m.Label == l {
-			return true
-		}
-	}
-	return false
-}
-
-func (m Model) isManyToOne() bool {
-	if m.Label == Duration {
-		return true
-	}
-	for _, l := range manyToOneModels {
-		if m.Label == l {
-			return true
-		}
-	}
-	return false
-}
-
-func (m Model) isManyToMany() bool {
-	if m.Label == Narrators {
-		return true
-	}
-	for _, l := range manyToManyModels {
-		if m.Label == l {
-			return true
-		}
-	}
-	return false
 }
 
 // Editable returns the list of editable book fields.

@@ -39,18 +39,18 @@ const (
 
 // Model represents a book field.
 type Model struct {
-	CategorySort string `json:"category_sort" db:"category_sort"`
-	Column       string `json:"column" db:"column"`
-	Colnum       int    `json:"colnum" db:"id"`
-	IsCategory   bool   `json:"is_category" db:"is_category"`
-	IsCustom     bool   `json:"is_custom" db:"is_custom"`
-	IsEditable   bool   `json:"is_editable" db:"is_editable"`
-	IsNames      bool   `json:"is_names" db:"is_names"`
-	JoinTable    string `json:"join_table" db:"join_table"`
-	Label        string `json:"label" db:"label"`
-	LinkColumn   string `json:"link_column" db:"link_column"`
-	Name         string `json:"name" db:"name"`
-	Table        string `json:"table" db:"table"`
+	CategorySort string `yaml:"category_sort" db:"category_sort"`
+	Column       string `yaml:"column" db:"column"`
+	Colnum       int    `yaml:"colnum" db:"id"`
+	IsCategory   bool   `yaml:"is_category" db:"is_category"`
+	IsCustom     bool   `yaml:"is_custom" db:"is_custom"`
+	IsEditable   bool   `yaml:"is_editable" db:"is_editable"`
+	IsNames      bool   `yaml:"is_names" db:"is_names"`
+	JoinTable    string `yaml:"join_table" db:"join_table"`
+	Label        string `yaml:"label" db:"label"`
+	LinkColumn   string `yaml:"link_column" db:"link_column"`
+	Name         string `yaml:"name" db:"name"`
+	Table        string `yaml:"table" db:"table"`
 }
 
 // DefaultModels returns the default book fields.
@@ -109,12 +109,20 @@ func booksColumn(m Model) (string, []any) {
 	return fmt.Sprintf(`IFNULL(%s, '') %s`, m.Column, m.Label), []any{}
 }
 
+func booksColJson(m Model) (string, []any) {
+	return fmt.Sprintf(`IFNULL(JSON_QUOTE(%s), '') %s`, m.Column, m.Label), []any{}
+}
+
 func groupConcat(m Model) string {
 	sep := defaultSep
 	if m.Label == Authors || m.Label == Narrators {
 		sep = namesSep
 	}
 	return fmt.Sprintf("IFNULL(GROUP_CONCAT(%s, '%s'), '')", m.Column, sep)
+}
+
+func groupArray(m Model) string {
+	return fmt.Sprintf("IFNULL(GROUP_ARRAY(%s), '[]')", m.Column)
 }
 
 func manyToOne(m Model) (string, []any) {
@@ -303,7 +311,7 @@ var modelMeta = Models{
 
 	LastModified: Model{
 		CategorySort: "last_modified",
-		Column:       "date(last_modified)",
+		Column:       "strftime('%Y-%m-%dT%H:%M:%S', last_modified) || 'Z'",
 		IsEditable:   false,
 		Label:        "last_modified",
 		Name:         "Modified",
@@ -320,7 +328,7 @@ var modelMeta = Models{
 
 	Pubdate: Model{
 		CategorySort: "pubdate",
-		Column:       "date(pubdate)",
+		Column:       "strftime('%Y-%m-%dT%H:%M:%S', pubdate) || 'Z'",
 		IsEditable:   true,
 		Label:        "pubdate",
 		Name:         "Published",
@@ -393,7 +401,7 @@ var modelMeta = Models{
 
 	Timestamp: Model{
 		CategorySort: "timestamp",
-		Column:       "date(timestamp)",
+		Column:       "strftime('%Y-%m-%dT%H:%M:%S', timestamp) || 'Z'",
 		IsEditable:   false,
 		Label:        "timestamp",
 		Name:         "Added",

@@ -1,47 +1,51 @@
 package cdb
 
 import (
-	"encoding/json"
 	"strconv"
 	"strings"
 )
 
 // Book represents a book record.
 type Book struct {
-	Title        string  `db:"title" yaml:"title" json:"title"`
-	Authors      string  `db:"authors" yaml:"authors,omitempty" json:"authors,omitempty"`
-	Narrators    string  `db:"#narrators" yaml:"#narrators,omitempty" json:"narrators,omitempty"`
-	Series       string  `db:"series" yaml:"series,omitempty" json:"series,omitempty"`
-	SeriesIndex  float64 `db:"series_index" yaml:"series_index,omitempty" json:"series_index,omitempty"`
-	Tags         string  `db:"tags" yaml:"tags,omitempty" json:"tags,omitempty"`
-	Pubdate      string  `db:"pubdate" yaml:"pubdate,omitempty" json:"pubdate,omitempty"`
-	Timestamp    string  `db:"timestamp" yaml:"timestamp,omitempty" json:"timestamp,omitempty"`
-	Duration     string  `db:"#duration" yaml:"#duration,omitempty" json:"duration,omitempty"`
-	Comments     string  `db:"comments" yaml:"comments,omitempty" json:"comments,omitempty"`
-	Rating       string  `db:"rating" yaml:"rating,omitempty" json:"rating,omitempty"`
-	Publisher    string  `db:"publisher" yaml:"publisher,omitempty" json:"publisher,omitempty"`
-	Languages    string  `db:"languages" yaml:"languages,omitempty" json:"languages,omitempty"`
-	Cover        string  `db:"cover" yaml:"cover,omitempty" json:"cover,omitempty"`
-	Formats      string  `db:"formats" yaml:"formats,omitempty" json:"formats,omitempty"`
-	Identifiers  string  `db:"identifiers" yaml:"identifiers,omitempty" json:"identifiers,omitempty"`
-	LastModified string  `db:"last_modified" yaml:"last_modified,omitempty" json:"last_modified,omitempty"`
-	ID           int     `db:"id" yaml:"id,omitempty" yaml:"id,omitempty"`
-	AuthorSort   string  `db:"author_sort" yaml:"author_sort,omitempty" json:"author_sort,omitempty"`
-	Sort         string  `db:"sort" yaml:"sort,omitempty" json:"sort,omitempty"`
-	Path         string  `db:"path" yaml:"path,omitempty" json:"path,omitempty"`
-	UUID         string  `db:"uuid,omitempty" yaml:"uuid,omitempty" json:"uuid,omitempty"`
+	Title     string `db:"title" yaml:"title" json:"title"`
+	Authors   string `db:"authors" yaml:"authors,omitempty" json:"author,omitempty"`
+	Narrators string `db:"#narrators" yaml:"#narrators,omitempty" json:"narrator,omitempty"`
+	Series    string `db:"series" yaml:"series,omitempty" json:"belongs_to.series,omitempty"`
+	//SeriesIndex  float64 `db:"series_index" yaml:"series_index,omitempty" json:"series_index,omitempty"`
+	SeriesIndex float64 `db:"series_index" yaml:"series_index,omitempty" json:"-"`
+	Tags        string  `db:"tags" yaml:"tags,omitempty" json:"subject,omitempty"`
+	Pubdate     string  `db:"pubdate" yaml:"pubdate,omitempty" json:"published,omitempty"`
+	Timestamp   string  `db:"timestamp" yaml:"timestamp,omitempty" json:"modified,omitempty"`
+	Duration    string  `db:"#duration" yaml:"#duration,omitempty" json:"duration,omitempty"`
+	Comments    string  `db:"comments" yaml:"comments,omitempty" json:"description,omitempty"`
+	//Rating       string  `db:"rating" yaml:"rating,omitempty" json:"rating,omitempty"`
+	Rating       string `db:"rating" yaml:"rating,omitempty" json:"rating,omitempty"`
+	Publisher    string `db:"publisher" yaml:"publisher,omitempty" json:"publisher,omitempty"`
+	Languages    string `db:"languages" yaml:"languages,omitempty" json:"language,omitempty"`
+	Cover        string `db:"cover" yaml:"cover,omitempty" json:"cover,omitempty"`
+	Formats      string `db:"formats" yaml:"formats,omitempty" json:"formats,omitempty"`
+	Identifiers  string `db:"identifiers" yaml:"identifiers,omitempty" json:"identifiers,omitempty"`
+	LastModified string `db:"last_modified" yaml:"last_modified,omitempty" json:"last_modified,omitempty"`
+	ID           int    `db:"id" yaml:"id,omitempty" json:"id,omitempty"`
+	AuthorSort   string `db:"author_sort" yaml:"author_sort,omitempty" json:"author_sort,omitempty"`
+	Sort         string `db:"sort" yaml:"sort,omitempty" json:"sort,omitempty"`
+	Path         string `db:"path" yaml:"path,omitempty" json:"path,omitempty"`
+	UUID         string `db:"uuid,omitempty" yaml:"uuid,omitempty" json:"uuid,omitempty"`
 }
 
-func (b *Book) MarshalJSON() ([]byte, error) {
-	return json.Marshal(b.Map())
-}
+// MarshalJSON satisfies the json.Marshaler interface, producing a somewhat more
+// complicated data model.
+//func (b *Book) MarshalJSON() ([]byte, error) {
+//  return json.Marshal(b.Map())
+//}
 
+// CalibredbFlags is a convenience method for returning a slice of metadata
+// fields to use with the 'set_metadata' command.
 func (b *Book) CalibredbFlags() []string {
 	var flags []string
 	book := b.StringMap()
 	for _, f := range AllModels().Editable() {
 		if m, ok := book[f]; ok {
-			println(f)
 			flags = append(flags, m)
 		}
 	}

@@ -148,6 +148,12 @@ github.com/mattn/go-sqlite3 v1.14.17 h1:mCRHCLDUBXgpKAqIKsaAaAsrAlbkeomtRFKXh2L6
 github.com/mattn/go-sqlite3 v1.14.17/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
 github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyuac5Z2hdY=
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
+github.com/ohzqq/libopds2-go v0.0.14 h1:WP8M0kJ94U7zyPF/05K4AZ45ybUrv0T1ZUfOGgtWqJE=
+github.com/ohzqq/libopds2-go v0.0.14/go.mod h1:2szJ9P9CtgdorEkbMiJSxF6YQm/gLmm4oh0kdav0QgI=
+github.com/ohzqq/libopds2-go v0.0.15 h1:2YmgLvdoRBaTjt3rIryfzAxv0W+lxq/nkDzxSuzdszg=
+github.com/ohzqq/libopds2-go v0.0.15/go.mod h1:QBULN4bXlV4D6pO983b4uEwrSH2FrBgL+2P4PCIZmtM=
+github.com/ohzqq/libopds2-go v0.0.16 h1:6E4iEUVpQ6MdGRoglaeAJJOEPFel43gag8QotiRv17Y=
+github.com/ohzqq/libopds2-go v0.0.16/go.mod h1:ipgqF27degSBKKQmZPpeJVgHkIeS33u/DAAJbW6GV8o=
 github.com/pelletier/go-toml/v2 v2.0.8 h1:0ctb6s9mE31h0/lhu+J6OPmVeDxJn+kYnJc2jZR9tGQ=
 github.com/pelletier/go-toml/v2 v2.0.8/go.mod h1:vuYfssBdrU2XDZ9bYydBu6t+6a6PYNcZljzZR9VXg+4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=

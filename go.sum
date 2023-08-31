@@ -154,6 +154,12 @@ github.com/ohzqq/libopds2-go v0.0.15 h1:2YmgLvdoRBaTjt3rIryfzAxv0W+lxq/nkDzxSuzd
 github.com/ohzqq/libopds2-go v0.0.15/go.mod h1:QBULN4bXlV4D6pO983b4uEwrSH2FrBgL+2P4PCIZmtM=
 github.com/ohzqq/libopds2-go v0.0.16 h1:6E4iEUVpQ6MdGRoglaeAJJOEPFel43gag8QotiRv17Y=
 github.com/ohzqq/libopds2-go v0.0.16/go.mod h1:ipgqF27degSBKKQmZPpeJVgHkIeS33u/DAAJbW6GV8o=
+github.com/ohzqq/libopds2-go v0.0.17 h1:Mts3452NwnFpLnabzdzZgAvg/V7N2v2IXLgyiRfnIa8=
+github.com/ohzqq/libopds2-go v0.0.17/go.mod h1:ipgqF27degSBKKQmZPpeJVgHkIeS33u/DAAJbW6GV8o=
+github.com/ohzqq/libopds2-go v0.0.18 h1:+0g6sJH2ksnTrvDOIbrmV4qlFY+g9fbdb1lK4aTu1p0=
+github.com/ohzqq/libopds2-go v0.0.18/go.mod h1:ipgqF27degSBKKQmZPpeJVgHkIeS33u/DAAJbW6GV8o=
+github.com/ohzqq/libopds2-go v0.0.19 h1:EVTcHGRmNvg+1Hdwg0IiwKGgZfFn+wH9TTVQQekhGn8=
+github.com/ohzqq/libopds2-go v0.0.19/go.mod h1:ipgqF27degSBKKQmZPpeJVgHkIeS33u/DAAJbW6GV8o=
 github.com/pelletier/go-toml/v2 v2.0.8 h1:0ctb6s9mE31h0/lhu+J6OPmVeDxJn+kYnJc2jZR9tGQ=
 github.com/pelletier/go-toml/v2 v2.0.8/go.mod h1:vuYfssBdrU2XDZ9bYydBu6t+6a6PYNcZljzZR9VXg+4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=

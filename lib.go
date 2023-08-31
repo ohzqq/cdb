@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/ohzqq/libopds2-go/opds2"
 )
 
 // Lib represents a calibre library.
@@ -36,6 +37,22 @@ func NewLib(name, path string, opts ...Option) *Lib {
 		opt(lib)
 	}
 	return lib
+}
+
+func (l *Lib) GetPubs(q sq.Sqlizer) ([]opds2.Publication, error) {
+	var pubs []opds2.Publication
+	stmt, args, err := q.ToSql()
+	if err != nil {
+		return pubs, err
+	}
+	books, err := l.db.getBooks(stmt, args)
+	if err != nil {
+		return pubs, err
+	}
+	for _, book := range books {
+		pubs = append(pubs, book.toOPDS(l.Name))
+	}
+	return pubs, nil
 }
 
 // GetBooks runs a database query. Takes an squirrel.Sqlizer interface to

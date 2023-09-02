@@ -1,10 +1,12 @@
 package cdb
 
 import (
+	"fmt"
 	"log"
 	"path/filepath"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/ohzqq/libopds2-go/opds1"
 	"github.com/ohzqq/libopds2-go/opds2"
 )
 
@@ -39,6 +41,16 @@ func NewLib(name, path string, opts ...Option) *Lib {
 	return lib
 }
 
+func (l *Lib) OPDS1Feed() opds1.Feed {
+	feed := opds1.Feed{}
+	return feed
+}
+
+func (l *Lib) OPDS2Feed() opds2.Feed {
+	feed := opds2.Feed{}
+	return feed
+}
+
 func (l *Lib) GetPubs(q sq.Sqlizer) ([]opds2.Publication, error) {
 	var pubs []opds2.Publication
 	stmt, args, err := q.ToSql()
@@ -50,7 +62,7 @@ func (l *Lib) GetPubs(q sq.Sqlizer) ([]opds2.Publication, error) {
 		return pubs, err
 	}
 	for _, book := range books {
-		pubs = append(pubs, book.toOPDS(l.Name))
+		pubs = append(pubs, book.ToOPDS2Publication())
 	}
 	return pubs, nil
 }
@@ -111,7 +123,9 @@ func (l *Lib) NewQuery() *Query {
 		}
 	}
 
-	var cols []string
+	cols := []string{
+		fmt.Sprintf("'%s' source", l.Name),
+	}
 	for _, m := range models {
 		cols = append(cols, m.ToSql())
 	}

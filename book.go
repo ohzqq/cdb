@@ -1,11 +1,13 @@
 package cdb
 
 import (
+	"mime"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/ohzqq/libopds2-go/opds1"
 	"github.com/ohzqq/libopds2-go/opds2"
 )
 
@@ -35,6 +37,7 @@ type Book struct {
 	Sort         string `db:"sort" yaml:"sort,omitempty" json:"sort,omitempty"`
 	Path         string `db:"path" yaml:"path,omitempty" json:"path,omitempty"`
 	UUID         string `db:"uuid,omitempty" yaml:"uuid,omitempty" json:"uuid,omitempty"`
+	Source       string
 }
 
 // MarshalJSON satisfies the json.Marshaler interface, producing a somewhat more
@@ -56,73 +59,162 @@ func (b *Book) CalibredbFlags() []string {
 	return flags
 }
 
-func (b *Book) toOPDS(lib string) opds2.Publication {
-	meta := make(map[string]any)
-	var img []any
-	var links []any
-
-	id := strconv.Itoa(b.ID)
-	meta["identifier"] = filepath.Join("/", lib, "books", id)
-	meta["source"] = lib
-
-	if v := b.Authors; v != "" {
-		meta["author"] = splitNames(v)
-	}
-	if v := b.Narrators; v != "" {
-		meta["narrator"] = splitNames(v)
-	}
-	if v := b.Tags; v != "" {
-		meta["subject"] = splitCat(v)
-	}
-	if v := b.Languages; v != "" {
-		meta["language"] = splitCat(v)
-	}
-	if v := b.Formats; v != "" {
-		for _, f := range splitCat(v) {
-			l := make(map[string]any)
-			l["href"] = filepath.Join("/", lib, f)
-			l["rel"] = []string{
-				"http://opds-spec.org/acquisition",
-				filepath.Join("/", lib, b.Path, filepath.Base(f)),
-			}
-			links = append(links, l)
-		}
-	}
-	if v := b.Series; v != "" {
-		meta["belongs_to"] = map[string]any{
-			"series": []any{
-				map[string]any{
-					"name":     b.Series,
-					"position": b.SeriesIndex,
-				},
-			},
-		}
-	}
-	if v := b.Cover; v != "" {
-		l := make(map[string]any)
-		l["href"] = filepath.Join("/", lib, v)
-		l["rel"] = []string{
-			"cover",
-			filepath.Join("/", lib, b.Path, filepath.Base(v)),
-		}
-		img = append(img, l)
-	}
-	for k, v := range b.Map() {
+func (b *Book) ToOPDS2Publication() opds2.Publication {
+	meta := b.Map()
+	for k, v := range meta {
 		switch k {
 		case Pubdate:
 			meta["published"] = v
 		case Timestamp:
 			meta["modified"] = v
-		case Publisher, Duration, Title:
+		case Languages:
+			meta["language"] = v
+		case Tags:
+			meta["subject"] = v
+		case Authors:
+			meta["author"] = v
+		case Narrators:
+			meta["narrator"] = v
+		case Publisher, Duration, Title, "source":
 			meta[k] = v
 		}
 	}
-	pub := map[string]any{
-		"metadata": meta,
-		"images":   img,
-		"links":    links,
+
+	id := strconv.Itoa(b.ID)
+	meta["identifier"] = filepath.Join("/", b.Source, "books", id)
+
+	pub := opds2.NewPublication(map[string]any{"metadata": meta})
+
+	if v := b.Formats; v != "" {
+		for _, f := range strings.Split(v, ", ") {
+			l := map[string]any{
+				"href": filepath.Join("/", b.Source, f),
+				"rel": []string{
+					"http://opds-spec.org/acquisition",
+					filepath.Join("/", b.Source, b.Path, filepath.Base(f)),
+				},
+			}
+			pub.Links = append(pub.Links, opds2.NewLink(l))
+		}
 	}
-	return opds2.ParsePublication(pub)
+
+	if v := b.Cover; v != "" {
+		l := map[string]any{
+			"href": filepath.Join("/", b.Source, v),
+			"rel": []string{
+				"cover",
+				filepath.Join("/", b.Source, b.Path, filepath.Base(v)),
+			},
+		}
+		pub.Images = append(pub.Images, opds2.NewLink(l))
+	}
+
+	if v := b.Series; v != "" {
+		series := map[string]any{
+			"name":     b.Series,
+			"position": b.SeriesIndex,
+		}
+		pub.BelongsToSeries(series)
+	}
+
+	return pub
+}
+
+func (b *Book) URL() string {
+	id := strconv.Itoa(b.ID)
+	return filepath.Join("/", b.Source, "books", id)
+}
+
+func (b *Book) ToOPDS1Publication() opds1.Entry {
+	var book opds1.Entry
+
+	book.Identifier = b.URL()
+	book.ID = b.URL()
+
+	if v := b.Title; v != "" {
+		book.Title = v
+	}
+
+	if v := b.Series; v != "" {
+		book.Series = []opds1.Serie{
+			opds1.Serie{
+				Name:     b.Series,
+				Position: float32(b.SeriesIndex),
+			},
+		}
+	}
+
+	if v := b.Pubdate; v != "" {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			t = time.Now()
+		}
+		book.Published = &t
+	}
+
+	if v := b.Comments; v != "" {
+		book.Summary = opds1.Content{
+			Content:     b.Comments,
+			ContentType: "html",
+		}
+	}
+
+	if v := b.Publisher; v != "" {
+		book.Publisher = v
+	}
+
+	if v := b.Cover; v != "" {
+		cover := opds1.Link{
+			Rel:      "http://opds-spec.org/image",
+			Href:     filepath.Join("/", b.Source, v),
+			TypeLink: "image/jpeg",
+		}
+		book.Links = append(book.Links, cover)
+	}
+
+	if v := b.Formats; v != "" {
+		for _, f := range strings.Split(v, ", ") {
+			l := opds1.Link{
+				Href:     filepath.Join("/", b.Source, f),
+				Rel:      "http://opds-spec.org/acquisition",
+				TypeLink: mime.TypeByExtension(filepath.Ext(f)),
+			}
+			book.Links = append(book.Links, l)
+		}
+	}
+
+	if v := b.Timestamp; v != "" {
+		t, err := time.Parse(time.RFC3339, v)
+		if err != nil {
+			t = time.Now()
+		}
+		book.Updated = &t
+	}
+
+	if v := b.Languages; v != "" {
+		book.Language = v
+	}
+
+	if v := b.Authors; v != "" {
+		for _, a := range strings.Split(v, " & ") {
+			auth := opds1.Author{
+				Name: a,
+			}
+			book.Author = append(book.Author, auth)
+		}
+	}
+
+	if v := b.Tags; v != "" {
+		for _, t := range strings.Split(v, ", ") {
+			tag := opds1.Category{
+				Term:  t,
+				Label: t,
+			}
+			book.Category = append(book.Category, tag)
+		}
+	}
+
+	return book
 }
 
 // Map converts a book record to map[string]any.
@@ -220,12 +312,20 @@ func (b *Book) StringMap() map[string]string {
 	return book
 }
 
-func splitNames(v string) []string {
-	return strings.Split(v, " & ")
+func splitNames(v string) []any {
+	var names []any
+	for _, n := range strings.Split(v, " & ") {
+		names = append(names, n)
+	}
+	return names
 }
 
-func splitCat(v string) []string {
-	return strings.Split(v, ", ")
+func splitCat(v string) []any {
+	var names []any
+	for _, n := range strings.Split(v, ", ") {
+		names = append(names, n)
+	}
+	return names
 }
 
 func (b *Book) sharedMap() map[string]string {
@@ -266,6 +366,9 @@ func (b *Book) sharedMap() map[string]string {
 	}
 	if v := b.UUID; v != "" {
 		book[UUID] = v
+	}
+	if v := b.Source; v != "" {
+		book["source"] = v
 	}
 	return book
 }

@@ -160,6 +160,8 @@ github.com/ohzqq/libopds2-go v0.0.18 h1:+0g6sJH2ksnTrvDOIbrmV4qlFY+g9fbdb1lK4aTu
 github.com/ohzqq/libopds2-go v0.0.18/go.mod h1:ipgqF27degSBKKQmZPpeJVgHkIeS33u/DAAJbW6GV8o=
 github.com/ohzqq/libopds2-go v0.0.19 h1:EVTcHGRmNvg+1Hdwg0IiwKGgZfFn+wH9TTVQQekhGn8=
 github.com/ohzqq/libopds2-go v0.0.19/go.mod h1:ipgqF27degSBKKQmZPpeJVgHkIeS33u/DAAJbW6GV8o=
+github.com/ohzqq/libopds2-go v0.0.20 h1:XCvCVyLOLPRhqfBUL5XN8kf27Lmn+BkHkZnXdByF2hU=
+github.com/ohzqq/libopds2-go v0.0.20/go.mod h1:v0TBYarqF644W2c+3XJmhJ/OIwiy8rvtPAoc/acKn2E=
 github.com/pelletier/go-toml/v2 v2.0.8 h1:0ctb6s9mE31h0/lhu+J6OPmVeDxJn+kYnJc2jZR9tGQ=
 github.com/pelletier/go-toml/v2 v2.0.8/go.mod h1:vuYfssBdrU2XDZ9bYydBu6t+6a6PYNcZljzZR9VXg+4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=

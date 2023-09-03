@@ -1,6 +1,7 @@
 package cdb
 
 import (
+	"fmt"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -9,49 +10,139 @@ import (
 
 // Book represents a book record.
 type Book struct {
-	Title        string    `db:"title" yaml:"title" json:"title"`
-	Authors      []string  `db:"authors" yaml:"authors,omitempty" json:"authors,omitempty"`
-	Narrators    []string  `db:"#narrators" yaml:"#narrators,omitempty" json:"#narrators,omitempty"`
-	Series       string    `db:"series" yaml:"series,omitempty" json:"series,omitempty"`
-	SeriesIndex  float64   `db:"series_index" yaml:"series_index,omitempty" json:"series_index,omitempty"`
-	Tags         []string  `db:"tags" yaml:"tags,omitempty" json:"tags,omitempty"`
-	Pubdate      time.Time `db:"pubdate" yaml:"pubdate,omitempty" json:"pubdate,omitempty"`
-	Timestamp    time.Time `db:"timestamp" yaml:"timestamp,omitempty" json:"timestamp,omitempty"`
-	Duration     int       `db:"#duration" yaml:"#duration,omitempty" json:"#duration,omitempty"`
-	Comments     string    `db:"comments" yaml:"comments,omitempty" json:"description,omitempty"`
-	Rating       int       `db:"rating" yaml:"rating,omitempty" json:"rating,omitempty"`
-	Publisher    string    `db:"publisher" yaml:"publisher,omitempty" json:"publisher,omitempty"`
-	Languages    []string  `db:"languages" yaml:"languages,omitempty" json:"languages,omitempty"`
-	Cover        string    `db:"cover" yaml:"cover,omitempty" json:"cover,omitempty"`
-	Formats      []string  `db:"formats" yaml:"formats,omitempty" json:"formats,omitempty"`
-	Identifiers  []string  `db:"identifiers" yaml:"identifiers,omitempty" json:"identifiers,omitempty"`
-	LastModified time.Time `db:"last_modified" yaml:"last_modified,omitempty" json:"last_modified,omitempty"`
-	ID           int       `db:"id" yaml:"id,omitempty" json:"id,omitempty"`
-	AuthorSort   string    `db:"author_sort" yaml:"author_sort,omitempty" json:"author_sort,omitempty"`
-	Sort         string    `db:"sort" yaml:"sort,omitempty" json:"sort,omitempty"`
-	Path         string    `db:"path" yaml:"path,omitempty" json:"path,omitempty"`
-	UUID         string    `db:"uuid,omitempty" yaml:"uuid,omitempty" json:"uuid,omitempty"`
-	Source       string    `json:"source,omitempty"`
+	Title        string     `db:"title" yaml:"title" json:"title"`
+	Authors      []string   `db:"authors" yaml:"authors,omitempty" json:"authors,omitempty"`
+	Narrators    []string   `db:"#narrators" yaml:"#narrators,omitempty" json:"#narrators,omitempty"`
+	Series       string     `db:"series" yaml:"series,omitempty" json:"series,omitempty"`
+	SeriesIndex  float64    `db:"series_index" yaml:"series_index,omitempty" json:"series_index,omitempty"`
+	Tags         []string   `db:"tags" yaml:"tags,omitempty" json:"tags,omitempty"`
+	Pubdate      *time.Time `db:"pubdate" yaml:"pubdate,omitempty" json:"pubdate,omitempty"`
+	Timestamp    *time.Time `db:"timestamp" yaml:"timestamp,omitempty" json:"timestamp,omitempty"`
+	Duration     string     `db:"#duration" yaml:"#duration,omitempty" json:"#duration,omitempty"`
+	Comments     string     `db:"comments" yaml:"comments,omitempty" json:"comments,omitempty"`
+	Rating       int        `db:"rating" yaml:"rating,omitempty" json:"rating,omitempty"`
+	Publisher    string     `db:"publisher" yaml:"publisher,omitempty" json:"publisher,omitempty"`
+	Languages    []string   `db:"languages" yaml:"languages,omitempty" json:"languages,omitempty"`
+	Cover        string     `db:"cover" yaml:"cover,omitempty" json:"cover,omitempty"`
+	Formats      []string   `db:"formats" yaml:"formats,omitempty" json:"formats,omitempty"`
+	Identifiers  []string   `db:"identifiers" yaml:"identifiers,omitempty" json:"identifiers,omitempty"`
+	LastModified *time.Time `db:"last_modified" yaml:"last_modified,omitempty" json:"last_modified,omitempty"`
+	ID           int        `db:"id" yaml:"id,omitempty" json:"id,omitempty"`
+	AuthorSort   string     `db:"author_sort" yaml:"author_sort,omitempty" json:"author_sort,omitempty"`
+	Sort         string     `db:"sort" yaml:"sort,omitempty" json:"sort,omitempty"`
+	Path         string     `db:"path" yaml:"path,omitempty" json:"path,omitempty"`
+	UUID         string     `db:"uuid,omitempty" yaml:"uuid,omitempty" json:"uuid,omitempty"`
+	Source       string     `json:"source,omitempty"`
 }
 
-// MarshalJSON satisfies the json.Marshaler interface, producing a somewhat more
-// complicated data model.
-//func (b *Book) MarshalJSON() ([]byte, error) {
-//  return json.Marshal(b.Map())
-//}
+// StringMapString converts a book record to map[string]string.
+func (b Book) StringMapString() map[string]string {
+	m := make(map[string]string)
+	for k, v := range b.sharedMap() {
+		m[k] = v
+	}
+	if v := b.Pubdate; v != nil {
+		m[Pubdate] = v.Format(time.DateOnly)
+	}
+	if v := b.LastModified; v != nil {
+		m[LastModified] = v.Format(time.DateOnly)
+	}
+	if v := b.Timestamp; v != nil {
+		m[Timestamp] = v.Format(time.DateOnly)
+	}
+	if v := b.Authors; len(v) != 0 {
+		m[Authors] = joinNames(v)
+	}
+	if v := b.Narrators; len(v) != 0 {
+		m[Narrators] = joinNames(v)
+	}
+	if v := b.Tags; len(v) != 0 {
+		m[Tags] = joinCat(v)
+	}
+	if v := b.Languages; len(v) != 0 {
+		m[Languages] = joinCat(v)
+	}
+	if v := b.Formats; len(v) != 0 {
+		m[Formats] = joinCat(v)
+	}
+	if v := b.Identifiers; len(v) != 0 {
+		m[Identifiers] = joinCat(v)
+	}
+	if v := b.Duration; v != "" {
+		m[Duration] = v
+	}
+	if v := b.Rating; v != 0 {
+		m[Rating] = strconv.Itoa(v)
+	}
+	if v := b.ID; v != 0 {
+		m[ID] = strconv.Itoa(v)
+	}
+	if v := b.SeriesIndex; v >= 0 {
+		m[SeriesIndex] = strconv.FormatFloat(v, 'f', -1, 64)
+	}
+	return m
+}
+
+// StringMap converts a book record to map[string]any.
+func (b Book) StringMap() map[string]any {
+	m := make(map[string]any)
+	for k, v := range b.sharedMap() {
+		m[k] = v
+	}
+	if v := b.Pubdate; v != nil {
+		m[Pubdate] = v
+	}
+	if v := b.LastModified; v != nil {
+		m[LastModified] = v
+	}
+	if v := b.Timestamp; v != nil {
+		m[Timestamp] = v
+	}
+	if v := b.Authors; len(v) != 0 {
+		m[Authors] = v
+	}
+	if v := b.Narrators; len(v) != 0 {
+		m[Narrators] = v
+	}
+	if v := b.Tags; len(v) != 0 {
+		m[Tags] = v
+	}
+	if v := b.Languages; len(v) != 0 {
+		m[Languages] = v
+	}
+	if v := b.Formats; len(v) != 0 {
+		m[Formats] = v
+	}
+	if v := b.Identifiers; len(v) != 0 {
+		m[Identifiers] = v
+	}
+	if v := b.Duration; v != "" {
+		m[Duration] = v
+	}
+	if v := b.Rating; v != 0 {
+		m[Rating] = v
+	}
+	if v := b.ID; v != 0 {
+		m[ID] = v
+	}
+	if v := b.SeriesIndex; v >= 0 {
+		m[SeriesIndex] = v
+	}
+	return m
+}
 
 // CalibredbFlags is a convenience method for returning a slice of metadata
 // fields to use with the 'set_metadata' command.
-//func (b *Book) CalibredbFlags() []string {
-//  var flags []string
-//  book := b.StringMap()
-//  for _, f := range AllModels().Editable() {
-//    if m, ok := book[f]; ok {
-//      flags = append(flags, m)
-//    }
-//  }
-//  return flags
-//}
+func (b *Book) CalibredbFlags() []string {
+	var flags []string
+	book := b.StringMapString()
+	for _, f := range AllModels().Editable() {
+		if m, ok := book[f]; ok {
+			flags = append(flags, m)
+		}
+	}
+	return flags
+}
 
 //func (b *Book) ToOPDS2Publication() opds2.Publication {
 //  meta := b.Map()
@@ -130,6 +221,13 @@ func joinCat(v []string) string {
 
 func joinNames(v []string) string {
 	return strings.Join(v, namesSep)
+}
+
+func parseDur(secs int) string {
+	hh := secs / 3600
+	mm := secs % 3600 / 60
+	ss := secs % 60
+	return fmt.Sprintf("%2d:%2d:%2d", hh, mm, ss)
 }
 
 //func (b *Book) ToOPDS1Publication() opds1.Entry {
@@ -224,7 +322,6 @@ func joinNames(v []string) string {
 //  return book
 //}
 
-// Map converts a book record to map[string]any.
 //func (b *Book) Map() map[string]any {
 //  book := make(map[string]any, 22)
 
@@ -273,52 +370,6 @@ func joinNames(v []string) string {
 //  return book
 //}
 
-// StringMap converts a book record to map[string]string.
-//func (b *Book) StringMap() map[string]string {
-//  book := make(map[string]string, 22)
-
-//  for l, v := range b.sharedMap() {
-//    book[l] = v
-//  }
-
-//  if v := b.Authors; v != "" {
-//    book[Authors] = v
-//  }
-//  if v := b.Narrators; v != "" {
-//    book[Narrators] = v
-//  }
-//  if v := b.Tags; v != "" {
-//    book[Tags] = v
-//  }
-//  if v := b.Languages; v != "" {
-//    book[Languages] = v
-//  }
-//  if v := b.Formats; v != "" {
-//    book[Formats] = v
-//  }
-//  if v := b.Identifiers; v != "" {
-//    book[Identifiers] = v
-//  }
-//  if v := b.Rating; v != "" {
-//    book[Rating] = v
-//  }
-//  if v := b.Duration; v != "" {
-//    i, err := strconv.Atoi(v)
-//    if err != nil {
-//      i = 0
-//    }
-//    book[Duration] = time.Unix(int64(i), 0).Format(time.TimeOnly)
-//  }
-//  if v := b.ID; v != 0 {
-//    book[ID] = strconv.Itoa(v)
-//  }
-//  if v := b.SeriesIndex; v >= 0 {
-//    book[SeriesIndex] = strconv.FormatFloat(v, 'f', -1, 64)
-//  }
-
-//  return book
-//}
-
 //func splitNames(v string) []any {
 //  var names []any
 //  for _, n := range strings.Split(v, " & ") {
@@ -335,47 +386,38 @@ func joinNames(v []string) string {
 //  return names
 //}
 
-//func (b *Book) sharedMap() map[string]string {
-//  book := make(map[string]string, 13)
+func (b *Book) sharedMap() map[string]string {
+	book := make(map[string]string, 13)
 
-//  if v := b.Title; v != "" {
-//    book[Title] = v
-//  }
-//  if v := b.Series; v != "" {
-//    book[Series] = v
-//  }
-//  if v := b.Pubdate; v != "" {
-//    book[Pubdate] = v
-//  }
-//  if v := b.Comments; v != "" {
-//    book[Comments] = v
-//  }
-//  if v := b.Publisher; v != "" {
-//    book[Publisher] = v
-//  }
-//  if v := b.Cover; v != "" {
-//    book[Cover] = v
-//  }
-//  if v := b.LastModified; v != "" {
-//    book[LastModified] = v
-//  }
-//  if v := b.Timestamp; v != "" {
-//    book[Timestamp] = v
-//  }
-//  if v := b.AuthorSort; v != "" {
-//    book[AuthorSort] = v
-//  }
-//  if v := b.Sort; v != "" {
-//    book[Sort] = v
-//  }
-//  if v := b.Path; v != "" {
-//    book[Path] = v
-//  }
-//  if v := b.UUID; v != "" {
-//    book[UUID] = v
-//  }
-//  if v := b.Source; v != "" {
-//    book["source"] = v
-//  }
-//  return book
-//}
+	if v := b.Title; v != "" {
+		book[Title] = v
+	}
+	if v := b.Series; v != "" {
+		book[Series] = v
+	}
+	if v := b.Comments; v != "" {
+		book[Comments] = v
+	}
+	if v := b.Publisher; v != "" {
+		book[Publisher] = v
+	}
+	if v := b.Cover; v != "" {
+		book[Cover] = v
+	}
+	if v := b.AuthorSort; v != "" {
+		book[AuthorSort] = v
+	}
+	if v := b.Sort; v != "" {
+		book[Sort] = v
+	}
+	if v := b.Path; v != "" {
+		book[Path] = v
+	}
+	if v := b.UUID; v != "" {
+		book[UUID] = v
+	}
+	if v := b.Source; v != "" {
+		book["source"] = v
+	}
+	return book
+}

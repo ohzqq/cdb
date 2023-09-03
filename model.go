@@ -115,9 +115,9 @@ func (m Model) colJSON() string {
 	switch m.Label {
 	case Authors, Narrators, Tags, Formats, Identifiers, Languages:
 		return fmt.Sprintf("IFNULL(JSON_GROUP_ARRAY(%s), '[]')", m.Column)
-	case Duration, Rating:
+	case Rating:
 		return fmt.Sprintf("JSON(IFNULL(GROUP_CONCAT(%s), 0))", m.Column)
-	case Comments, Publisher, Series:
+	case Comments, Publisher, Series, Duration:
 		return fmt.Sprintf("JSON_QUOTE(IFNULL(GROUP_CONCAT(%s), ''))", m.Column)
 	case SeriesIndex:
 		return fmt.Sprintf(`'%s', JSON(IFNULL(%s, 0))`, m.Label, m.Column)
@@ -274,7 +274,7 @@ var manyToManyModels = []string{
 }
 
 var durationModel = Model{
-	Column:       "strftime('%s', value)",
+	Column:       "value",
 	CategorySort: "value",
 	IsCustom:     true,
 	IsEditable:   true,

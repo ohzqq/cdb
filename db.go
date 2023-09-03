@@ -5,9 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strconv"
 	"sync"
-	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
@@ -91,81 +89,7 @@ func (r Records) StringMapString() ([]map[string]string, error) {
 	}
 
 	for i, b := range anyB {
-		m := make(map[string]string)
-		if v := b.Title; v != "" {
-			m[Title] = v
-		}
-		if v := b.Series; v != "" {
-			m[Series] = v
-		}
-		if v := b.Comments; v != "" {
-			m[Comments] = v
-		}
-		if v := b.Publisher; v != "" {
-			m[Publisher] = v
-		}
-		if v := b.Cover; v != "" {
-			m[Cover] = v
-		}
-		//if v := b.Pubdate; v != nil {
-		//  m[Pubdate] = v.Format(time.DateOnly)
-		//}
-		//if v := b.LastModified; v != nil {
-		//  m[LastModified] = v.Format(time.DateOnly)
-		//}
-		//if v := b.Timestamp; v != nil {
-		//  m[Timestamp] = v.Format(time.DateOnly)
-		//}
-		if v := b.AuthorSort; v != "" {
-			m[AuthorSort] = v
-		}
-		if v := b.Sort; v != "" {
-			m[Sort] = v
-		}
-		if v := b.Path; v != "" {
-			m[Path] = v
-		}
-		if v := b.UUID; v != "" {
-			m[UUID] = v
-		}
-		if v := b.Source; v != "" {
-			m["source"] = v
-		}
-		if v := b.Authors; len(v) != 0 {
-			m[Authors] = joinNames(v)
-		}
-		if v := b.Narrators; len(v) != 0 {
-			m[Narrators] = joinNames(v)
-		}
-		if v := b.Tags; len(v) != 0 {
-			m[Tags] = joinCat(v)
-		}
-		if v := b.Languages; len(v) != 0 {
-			m[Languages] = joinCat(v)
-		}
-		if v := b.Formats; len(v) != 0 {
-			m[Formats] = joinCat(v)
-		}
-		if v := b.Identifiers; len(v) != 0 {
-			m[Identifiers] = joinCat(v)
-		}
-		if v := b.Duration; v != 0 {
-			//t, _ := time.ParseDuration(i + "s")
-			i := strconv.Itoa(v)
-			t, _ := time.Parse("5", i)
-			fmt.Printf("%s\n", t)
-			m[Duration] = t.Format(time.TimeOnly)
-		}
-		if v := b.Rating; v != 0 {
-			m[Rating] = strconv.Itoa(v)
-		}
-		if v := b.ID; v != 0 {
-			m[ID] = strconv.Itoa(v)
-		}
-		if v := b.SeriesIndex; v >= 0 {
-			m[SeriesIndex] = strconv.FormatFloat(v, 'f', -1, 64)
-		}
-		books[i] = m
+		books[i] = b.StringMapString()
 	}
 	return books, nil
 }

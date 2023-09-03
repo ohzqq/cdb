@@ -94,6 +94,38 @@ func (m Model) ToSql() string {
 	}
 }
 
+func (m Model) ToSqlJSON() string {
+	switch {
+	case slices.Contains(manyToOneModels, m.Label), m.Label == Duration:
+		stmt, _ := manyToOneJSON(m)
+		return stmt
+	case slices.Contains(manyToManyModels, m.Label), m.Label == Narrators:
+		stmt, _ := manyToManyJSON(m)
+		return stmt
+	case m.Label == Cover:
+		stmt, _ := coverStmtJSON("")
+		return stmt
+	default:
+		stmt := m.colJSON()
+		return stmt
+	}
+}
+
+func (m Model) colJSON() string {
+	switch m.Label {
+	case Authors, Narrators, Tags, Formats, Identifiers, Languages:
+		return fmt.Sprintf("IFNULL(JSON_GROUP_ARRAY(%s), '[]')", m.Column)
+	case Duration, Rating:
+		return fmt.Sprintf("JSON(IFNULL(GROUP_CONCAT(%s), 0))", m.Column)
+	case Comments, Publisher, Series:
+		return fmt.Sprintf("JSON_QUOTE(IFNULL(GROUP_CONCAT(%s), ''))", m.Column)
+	case SeriesIndex:
+		return fmt.Sprintf(`'%s', JSON(IFNULL(%s, 0))`, m.Label, m.Column)
+	default:
+		return fmt.Sprintf(`'%s', JSON_QUOTE(IFNULL(%s, ''))`, m.Label, m.Column)
+	}
+}
+
 // Editable returns the list of editable book fields.
 func (m Models) Editable() []string {
 	var edit []string
@@ -109,8 +141,30 @@ func booksColumn(m Model) (string, []any) {
 	return fmt.Sprintf(`IFNULL(%s, '') %s`, m.Column, m.Label), []any{}
 }
 
-func groupObject(m Model) string {
-	return fmt.Sprintf("IFNULL(JSON_GROUP_ARRAY(JSON_OBJECT(%s)), '{}')", m.Column)
+func booksColJSON(m Model) (string, []any) {
+	return fmt.Sprintf(`'%s', JSON_QUOTE(IFNULL(%s, ''))`, m.Label, m.Column), []any{}
+}
+
+func groupConcat(m Model) string {
+	sep := catSep
+	if m.Label == Authors || m.Label == Narrators {
+		sep = namesSep
+	}
+	return fmt.Sprintf("IFNULL(GROUP_CONCAT(%s, '%s'), '')", m.Column, sep)
+}
+
+func groupArray(m Model) string {
+	return fmt.Sprintf("IFNULL(JSON_GROUP_ARRAY(%s), '[]')", m.Column)
+}
+
+func manyToOneJSON(m Model) (string, []any) {
+	sel := sq.Select(m.colJSON()).
+		Prefix(fmt.Sprint("'", m.Label, "', (")).
+		From(m.Table).
+		Where("book=books.id").
+		Suffix(")")
+
+	return toSql(sel)
 }
 
 func manyToOne(m Model) (string, []any) {
@@ -121,6 +175,23 @@ func manyToOne(m Model) (string, []any) {
 		Suffix(fmt.Sprint(") '", m.Label, "'"))
 
 	return toSql(sel)
+}
+
+func manyToManyJSON(m Model) (string, []any) {
+	col := sq.Select(m.colJSON()).
+		From(m.Table).
+		Where(fmt.Sprint(m.Table, ".id"))
+
+	join := sq.Select(m.LinkColumn).
+		From(m.JoinTable).
+		Where("book IN (books.id)")
+
+	cs, _ := toSql(col)
+	js, _ := toSql(join)
+
+	stmt := fmt.Sprintf("'%s', (%s IN (%s))", m.Label, cs, js)
+
+	return stmt, []any{}
 }
 
 func manyToMany(m Model) (string, []any) {
@@ -157,10 +228,14 @@ func coverStmt(lib string) (string, []any) {
 	return stmt + " cover", args
 }
 
-const (
-	namesSep   = " & "
-	defaultSep = ", "
-)
+func coverStmtJSON(lib string) (string, []any) {
+	sel := sq.Case("has_cover").
+		When("1", `IFNULL('books/' || books.id || '/cover.jpg', '')`).
+		Else("''")
+
+	stmt, args, _ := sel.ToSql()
+	return "'cover', " + stmt, args
+}
 
 func calculateOffset(page, limit int) uint64 {
 	cur := page - 1
@@ -204,7 +279,7 @@ var durationModel = Model{
 	IsCustom:     true,
 	IsEditable:   true,
 	Label:        "#duration",
-	Name:         "Duration",
+	Name:         "duration",
 }
 
 var narratorsModel = Model{
@@ -216,7 +291,7 @@ var narratorsModel = Model{
 	IsNames:      true,
 	Label:        "#narrators",
 	LinkColumn:   "value",
-	Name:         "Narrators",
+	Name:         "narrator",
 }
 
 var modelMeta = Models{
@@ -229,7 +304,7 @@ var modelMeta = Models{
 		JoinTable:    "books_authors_link",
 		Label:        "authors",
 		LinkColumn:   "author",
-		Name:         "Authors",
+		Name:         "author",
 		Table:        "authors",
 	},
 
@@ -244,7 +319,7 @@ var modelMeta = Models{
 		Column:     "text",
 		IsEditable: true,
 		Label:      "comments",
-		Name:       "Description",
+		Name:       "description",
 		Table:      "comments",
 	},
 
@@ -253,7 +328,7 @@ var modelMeta = Models{
 		IsEditable: false,
 		IsNames:    false,
 		Label:      "cover",
-		Name:       "Cover",
+		Name:       "images",
 	},
 
 	Formats: Model{
@@ -262,7 +337,7 @@ var modelMeta = Models{
 		IsCategory:   true,
 		IsEditable:   false,
 		Label:        "formats",
-		Name:         "Formats",
+		Name:         "links",
 		Table:        "data",
 	},
 
@@ -271,7 +346,7 @@ var modelMeta = Models{
 		Column:       "id",
 		IsEditable:   false,
 		Label:        "id",
-		Name:         "ID",
+		Name:         "identifier",
 		Table:        "books",
 	},
 
@@ -293,7 +368,7 @@ var modelMeta = Models{
 		JoinTable:    "books_languages_link",
 		Label:        "languages",
 		LinkColumn:   "lang_code",
-		Name:         "Languages",
+		Name:         "language",
 		Table:        "languages",
 	},
 
@@ -302,7 +377,7 @@ var modelMeta = Models{
 		Column:       "strftime('%Y-%m-%dT%H:%M:%S', last_modified) || 'Z'",
 		IsEditable:   false,
 		Label:        "last_modified",
-		Name:         "Modified",
+		Name:         "lastModified",
 		Table:        "books",
 	},
 
@@ -311,7 +386,7 @@ var modelMeta = Models{
 		Column:       "path",
 		IsEditable:   false,
 		Label:        "path",
-		Name:         "Path",
+		Name:         "path",
 	},
 
 	Pubdate: Model{
@@ -319,7 +394,7 @@ var modelMeta = Models{
 		Column:       "strftime('%Y-%m-%dT%H:%M:%S', pubdate) || 'Z'",
 		IsEditable:   true,
 		Label:        "pubdate",
-		Name:         "Published",
+		Name:         "published",
 		Table:        "books",
 	},
 
@@ -331,7 +406,7 @@ var modelMeta = Models{
 		JoinTable:    "books_publishers_link",
 		Label:        "publisher",
 		LinkColumn:   "publisher",
-		Name:         "Publisher",
+		Name:         "publisher",
 		Table:        "publishers",
 	},
 
@@ -343,7 +418,7 @@ var modelMeta = Models{
 		JoinTable:    "books_ratings_link",
 		Label:        "rating",
 		LinkColumn:   "rating",
-		Name:         "Rating",
+		Name:         "rating",
 		Table:        "ratings",
 	},
 
@@ -355,7 +430,7 @@ var modelMeta = Models{
 		JoinTable:    "books_series_link",
 		Label:        "series",
 		LinkColumn:   "series",
-		Name:         "Series",
+		Name:         "series",
 		Table:        "series",
 	},
 
@@ -364,7 +439,7 @@ var modelMeta = Models{
 		Column:       "books.series_index",
 		IsEditable:   true,
 		Label:        "series_index",
-		Name:         "Position",
+		Name:         "position",
 	},
 
 	Sort: Model{
@@ -372,7 +447,7 @@ var modelMeta = Models{
 		Column:       "sort",
 		IsEditable:   true,
 		Label:        "sort",
-		Name:         "SortAs",
+		Name:         "sortAs",
 	},
 
 	Tags: Model{
@@ -383,7 +458,7 @@ var modelMeta = Models{
 		JoinTable:    "books_tags_link",
 		Label:        "tags",
 		LinkColumn:   "tag",
-		Name:         "Tags",
+		Name:         "subject",
 		Table:        "tags",
 	},
 
@@ -392,7 +467,7 @@ var modelMeta = Models{
 		Column:       "strftime('%Y-%m-%dT%H:%M:%S', timestamp) || 'Z'",
 		IsEditable:   false,
 		Label:        "timestamp",
-		Name:         "Added",
+		Name:         "modified",
 		Table:        "books",
 	},
 
@@ -401,7 +476,7 @@ var modelMeta = Models{
 		Column:       "title",
 		IsEditable:   true,
 		Label:        "title",
-		Name:         "Title",
+		Name:         "title",
 		Table:        "books",
 	},
 

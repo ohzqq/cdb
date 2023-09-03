@@ -26,6 +26,17 @@ func NewQuery(cols []string) *Query {
 	return q
 }
 
+func NewQueryJSON(cols []string) *Query {
+	q := &Query{
+		sort: "timestamp",
+	}
+
+	q.query = sq.Select("JSON_OBJECT( \n" + strings.Join(cols, ",\n") + ")").
+		From("books")
+
+	return q
+}
+
 // GetByID retrieves records by id.
 func (q *Query) GetByID(ids ...any) *Query {
 	q.query = q.query.Where(sq.Eq{"id": ids})

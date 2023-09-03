@@ -109,40 +109,8 @@ func booksColumn(m Model) (string, []any) {
 	return fmt.Sprintf(`IFNULL(%s, '') %s`, m.Column, m.Label), []any{}
 }
 
-func booksColJson(m Model) (string, []any) {
-	return fmt.Sprintf(`IFNULL(JSON_QUOTE(%s), '') %s`, m.Column, m.Label), []any{}
-}
-
-func groupConcat(m Model) string {
-	sep := defaultSep
-	if m.Label == Authors || m.Label == Narrators {
-		sep = namesSep
-	}
-	return fmt.Sprintf("IFNULL(GROUP_CONCAT(%s, '%s'), '')", m.Column, sep)
-}
-
-func groupArray(m Model) string {
-	return fmt.Sprintf("IFNULL(JSON_GROUP_ARRAY(%s), '[]')", m.Column)
-}
-
 func groupObject(m Model) string {
 	return fmt.Sprintf("IFNULL(JSON_GROUP_ARRAY(JSON_OBJECT(%s)), '{}')", m.Column)
-}
-
-func objectFields(m Model, lib string) string {
-	switch m.Label {
-	case Narrators, Authors, Publisher:
-		return fmt.Sprintf("'identifier', '/%s/%s/' || id || '.html', 'name', JSON_OBJECT('SingleString', value), 'role', '%s'", m.Label, lib, m.Label)
-	case Series:
-		return fmt.Sprintf("'identifier', '/%s/series/' || id || '.html', 'sort_as', 'name', 'name', name, 'position', books.series_index", lib)
-	case Tags:
-		return fmt.Sprintf("'name', name, 'scheme', '/%s/tags/' || id || '.html', 'sort_as', 'name'", lib)
-	case Cover:
-		return fmt.Sprintf("'rel', JSON_ARRAY('cover', '/%s/' || books.path || '/cover.jpg'), 'title', books.title, 'href', '/%s/books/' || books.id || '/cover.jpg')", lib, lib)
-	case Formats:
-		return fmt.Sprintf("'rel', JSON_ARRAY('http://opds-spec.org/acquisition', '/%s/' || books.path || '/' || name || '.' || lower(format)), 'title', books.title, 'href', '/%s/books/' || books.id || '/' || books.title || '.' || lower(format))", lib, lib)
-	}
-	return ""
 }
 
 func manyToOne(m Model) (string, []any) {

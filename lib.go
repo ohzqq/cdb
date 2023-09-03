@@ -12,7 +12,7 @@ import (
 
 // Lib represents a calibre library.
 type Lib struct {
-	db           *DB
+	*DB
 	Name         string
 	Path         string
 	isAudiobooks bool
@@ -33,7 +33,7 @@ func NewLib(name, path string, opts ...Option) *Lib {
 	lib := &Lib{
 		Name: name,
 		Path: path,
-		db:   &DB{},
+		DB:   &DB{},
 	}
 	for _, opt := range opts {
 		opt(lib)
@@ -57,7 +57,7 @@ func (l *Lib) GetPubs(q sq.Sqlizer) ([]opds2.Publication, error) {
 	if err != nil {
 		return pubs, err
 	}
-	books, err := l.db.getBooks(stmt, args)
+	books, err := l.getBooks(stmt, args)
 	if err != nil {
 		return pubs, err
 	}
@@ -74,7 +74,7 @@ func (l *Lib) GetBooks(q sq.Sqlizer) ([]*Book, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return l.db.getBooks(stmt, args)
+	return l.getBooks(stmt, args)
 }
 
 // GetPreference gets a calibre preference.
@@ -90,7 +90,7 @@ func (l *Lib) GetPreference(c string) ([]byte, error) {
 		return []byte{}, err
 	}
 
-	return l.db.getPreferences(stmt, args...)
+	return l.getPreferences(stmt, args...)
 }
 
 // ListPreferences lists the retrievable calibre preferences.
@@ -106,7 +106,7 @@ func ListPreferences() []string {
 // NewQuery initializes a database query.
 func (l *Lib) NewQuery() *Query {
 	p := filepath.Join(l.Path, l.Name, metaDB)
-	err := l.db.Connect(p)
+	err := l.Connect(p)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -114,7 +114,7 @@ func (l *Lib) NewQuery() *Query {
 	models := DefaultModels()
 
 	if l.isAudiobooks {
-		am, err := l.db.getAudiobookColumns()
+		am, err := l.getAudiobookColumns()
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -14,8 +14,7 @@ type Query struct {
 	limit int
 }
 
-// NewQuery initializes a query builder.
-func NewQuery(cols []string) *Query {
+func newQuery(cols []string) *Query {
 	q := &Query{
 		sort: "timestamp",
 	}
@@ -26,7 +25,8 @@ func NewQuery(cols []string) *Query {
 	return q
 }
 
-func NewQueryJSON(cols []string) *Query {
+// NewQuery initializes a query builder.
+func NewQuery(cols []string) *Query {
 	q := &Query{
 		sort: "timestamp",
 	}

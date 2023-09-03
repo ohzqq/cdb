@@ -2,6 +2,7 @@ package cdb
 
 import (
 	"fmt"
+	"strings"
 
 	sq "github.com/Masterminds/squirrel"
 	"golang.org/x/exp/slices"
@@ -37,6 +38,11 @@ const (
 	Narrators     = "#narrators"
 )
 
+const (
+	namesSep = " & "
+	catSep   = ", "
+)
+
 // Model represents a book field.
 type Model struct {
 	CategorySort string `yaml:"category_sort" db:"category_sort"`
@@ -51,6 +57,10 @@ type Model struct {
 	LinkColumn   string `yaml:"link_column" db:"link_column"`
 	Name         string `yaml:"name" db:"name"`
 	Table        string `yaml:"table" db:"table"`
+}
+
+func GetModel(l string) Model {
+	return AllModels()[l]
 }
 
 // DefaultModels returns the default book fields.
@@ -124,6 +134,20 @@ func (m Model) colJSON() string {
 	default:
 		return fmt.Sprintf(`'%s', JSON_QUOTE(IFNULL(%s, ''))`, m.Label, m.Column)
 	}
+}
+
+func (m Model) Join(v []string) string {
+	if m.IsNames {
+		return strings.Join(v, namesSep)
+	}
+	return strings.Join(v, catSep)
+}
+
+func (m Model) Split(v string) []string {
+	if m.IsNames {
+		return strings.Split(v, namesSep)
+	}
+	return strings.Split(v, catSep)
 }
 
 // Editable returns the list of editable book fields.

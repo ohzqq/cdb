@@ -1,10 +1,9 @@
 package cdb
 
 import (
-	"fmt"
+	"net/url"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -35,6 +34,18 @@ type Book struct {
 	Source       string     `json:"source,omitempty"`
 }
 
+// URL sets the path for a *url.URL and returns a string, by default returns a
+// path.
+func (b *Book) URL(urlopt ...*url.URL) string {
+	u := &url.URL{}
+	if len(urlopt) > 0 {
+		u = urlopt[0]
+	}
+	id := strconv.Itoa(b.ID)
+	u.Path = filepath.Join("/", b.Source, "books", id)
+	return u.String()
+}
+
 // StringMapString converts a book record to map[string]string.
 func (b Book) StringMapString() map[string]string {
 	m := make(map[string]string)
@@ -51,22 +62,22 @@ func (b Book) StringMapString() map[string]string {
 		m[Timestamp] = v.Format(time.DateOnly)
 	}
 	if v := b.Authors; len(v) != 0 {
-		m[Authors] = joinNames(v)
+		m[Authors] = GetModel(Authors).Join(v)
 	}
 	if v := b.Narrators; len(v) != 0 {
-		m[Narrators] = joinNames(v)
+		m[Narrators] = GetModel(Narrators).Join(v)
 	}
 	if v := b.Tags; len(v) != 0 {
-		m[Tags] = joinCat(v)
+		m[Tags] = GetModel(Tags).Join(v)
 	}
 	if v := b.Languages; len(v) != 0 {
-		m[Languages] = joinCat(v)
+		m[Languages] = GetModel(Languages).Join(v)
 	}
 	if v := b.Formats; len(v) != 0 {
-		m[Formats] = joinCat(v)
+		m[Formats] = GetModel(Formats).Join(v)
 	}
 	if v := b.Identifiers; len(v) != 0 {
-		m[Identifiers] = joinCat(v)
+		m[Identifiers] = GetModel(Identifiers).Join(v)
 	}
 	if v := b.Duration; v != "" {
 		m[Duration] = v
@@ -143,248 +154,6 @@ func (b *Book) CalibredbFlags() []string {
 	}
 	return flags
 }
-
-//func (b *Book) ToOPDS2Publication() opds2.Publication {
-//  meta := b.Map()
-//  for k, v := range meta {
-//    switch k {
-//    case Pubdate:
-//      meta["published"] = v
-//    case Timestamp:
-//      meta["modified"] = v
-//    case Languages:
-//      meta["language"] = v
-//    case Tags:
-//      meta["subject"] = v
-//    case Authors:
-//      meta["author"] = v
-//    case Narrators:
-//      meta["narrator"] = v
-//    case Publisher, Duration, Title, "source":
-//      meta[k] = v
-//    }
-//  }
-
-//  id := strconv.Itoa(b.ID)
-//  meta["identifier"] = filepath.Join("/", b.Source, "books", id)
-
-//  pub := opds2.NewPublication(map[string]any{"metadata": meta})
-
-//  if v := b.Formats; v != "" {
-//    for _, f := range strings.Split(v, ", ") {
-//      l := map[string]any{
-//        "href": filepath.Join("/", b.Source, f),
-//        "rel": []string{
-//          "http://opds-spec.org/acquisition",
-//          filepath.Join("/", b.Source, b.Path, filepath.Base(f)),
-//        },
-//      }
-//      pub.Links = append(pub.Links, opds2.NewLink(l))
-//    }
-//  }
-
-//  if v := b.Cover; v != "" {
-//    l := map[string]any{
-//      "href": filepath.Join("/", b.Source, v),
-//      "rel": []string{
-//        "cover",
-//        filepath.Join("/", b.Source, b.Path, filepath.Base(v)),
-//      },
-//    }
-//    pub.Images = append(pub.Images, opds2.NewLink(l))
-//  }
-
-//  if v := b.Series; v != "" {
-//    series := map[string]any{
-//      "name":     b.Series,
-//      "position": b.SeriesIndex,
-//    }
-//    pub.BelongsToSeries(series)
-//  }
-
-//  return pub
-//}
-
-const (
-	namesSep = " & "
-	catSep   = ", "
-)
-
-func (b *Book) URL() string {
-	id := strconv.Itoa(b.ID)
-	return filepath.Join("/", b.Source, "books", id)
-}
-
-func joinCat(v []string) string {
-	return strings.Join(v, catSep)
-}
-
-func joinNames(v []string) string {
-	return strings.Join(v, namesSep)
-}
-
-func parseDur(secs int) string {
-	hh := secs / 3600
-	mm := secs % 3600 / 60
-	ss := secs % 60
-	return fmt.Sprintf("%2d:%2d:%2d", hh, mm, ss)
-}
-
-//func (b *Book) ToOPDS1Publication() opds1.Entry {
-//  var book opds1.Entry
-
-//  book.Identifier = b.URL()
-//  book.ID = b.URL()
-
-//  if v := b.Title; v != "" {
-//    book.Title = v
-//  }
-
-//  if v := b.Series; v != "" {
-//    book.Series = []opds1.Serie{
-//      opds1.Serie{
-//        Name:     b.Series,
-//        Position: float32(b.SeriesIndex),
-//      },
-//    }
-//  }
-
-//  if v := b.Pubdate; v != "" {
-//    t, err := time.Parse(time.RFC3339, v)
-//    if err != nil {
-//      t = time.Now()
-//    }
-//    book.Published = &t
-//  }
-
-//  if v := b.Comments; v != "" {
-//    book.Summary = opds1.Content{
-//      Content:     b.Comments,
-//      ContentType: "html",
-//    }
-//  }
-
-//  if v := b.Publisher; v != "" {
-//    book.Publisher = v
-//  }
-
-//  if v := b.Cover; v != "" {
-//    cover := opds1.Link{
-//      Rel:      "http://opds-spec.org/image",
-//      Href:     filepath.Join("/", b.Source, v),
-//      TypeLink: "image/jpeg",
-//    }
-//    book.Links = append(book.Links, cover)
-//  }
-
-//  if v := b.Formats; v != "" {
-//    for _, f := range strings.Split(v, ", ") {
-//      l := opds1.Link{
-//        Href:     filepath.Join("/", b.Source, f),
-//        Rel:      "http://opds-spec.org/acquisition",
-//        TypeLink: mime.TypeByExtension(filepath.Ext(f)),
-//      }
-//      book.Links = append(book.Links, l)
-//    }
-//  }
-
-//  if v := b.Timestamp; v != "" {
-//    t, err := time.Parse(time.RFC3339, v)
-//    if err != nil {
-//      t = time.Now()
-//    }
-//    book.Updated = &t
-//  }
-
-//  if v := b.Languages; v != "" {
-//    book.Language = v
-//  }
-
-//  if v := b.Authors; v != "" {
-//    for _, a := range strings.Split(v, " & ") {
-//      auth := opds1.Author{
-//        Name: a,
-//      }
-//      book.Author = append(book.Author, auth)
-//    }
-//  }
-
-//  if v := b.Tags; v != "" {
-//    for _, t := range strings.Split(v, ", ") {
-//      tag := opds1.Category{
-//        Term:  t,
-//        Label: t,
-//      }
-//      book.Category = append(book.Category, tag)
-//    }
-//  }
-
-//  return book
-//}
-
-//func (b *Book) Map() map[string]any {
-//  book := make(map[string]any, 22)
-
-//  for l, v := range b.sharedMap() {
-//    book[l] = v
-//  }
-
-//  if v := b.Authors; v != "" {
-//    book[Authors] = splitNames(v)
-//  }
-//  if v := b.Narrators; v != "" {
-//    book[Narrators] = splitNames(v)
-//  }
-//  if v := b.Tags; v != "" {
-//    book[Tags] = splitCat(v)
-//  }
-//  if v := b.Languages; v != "" {
-//    book[Languages] = splitCat(v)
-//  }
-//  if v := b.Formats; v != "" {
-//    book[Formats] = splitCat(v)
-//  }
-//  if v := b.Identifiers; v != "" {
-//    book[Identifiers] = splitCat(v)
-//  }
-//  if v := b.Duration; v != "" {
-//    i, err := strconv.Atoi(v)
-//    if err != nil {
-//      i = 0
-//    }
-//    book[Duration] = i
-//  }
-//  if v := b.Rating; v != "" {
-//    i, err := strconv.Atoi(v)
-//    if err != nil {
-//      i = 0
-//    }
-//    book[Rating] = i
-//  }
-//  if v := b.ID; v != 0 {
-//    book[ID] = v
-//  }
-//  if v := b.SeriesIndex; v >= 0 {
-//    book[SeriesIndex] = v
-//  }
-//  return book
-//}
-
-//func splitNames(v string) []any {
-//  var names []any
-//  for _, n := range strings.Split(v, " & ") {
-//    names = append(names, n)
-//  }
-//  return names
-//}
-
-//func splitCat(v string) []any {
-//  var names []any
-//  for _, n := range strings.Split(v, ", ") {
-//    names = append(names, n)
-//  }
-//  return names
-//}
 
 func (b *Book) sharedMap() map[string]string {
 	book := make(map[string]string, 13)

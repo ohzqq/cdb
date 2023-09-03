@@ -26,6 +26,13 @@ func IsAudiobooks() Option {
 	}
 }
 
+// PrintQuery prints the database query to stdout.
+func PrintQuery() Option {
+	return func(l *Lib) {
+		l.printQuery = true
+	}
+}
+
 // NewLib initializes a library.
 func NewLib(name, path string, opts ...Option) *Lib {
 	lib := &Lib{
@@ -47,6 +54,38 @@ func (l *Lib) GetBooks(q sq.Sqlizer) (Records, error) {
 		log.Fatal(err)
 	}
 	return l.bookQuery(stmt, args)
+}
+
+// NewQuery initializes a database query.
+func (l *Lib) NewQuery() *Query {
+	p := filepath.Join(l.Path, l.Name, metaDB)
+	err := l.Connect(p)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cols := []string{
+		fmt.Sprintf("'source', JSON_QUOTE('%s')", l.Name),
+	}
+	for _, m := range l.models() {
+		cols = append(cols, m.ToSqlJSON())
+	}
+
+	return NewQuery(cols)
+}
+
+func (l *Lib) models() Models {
+	models := DefaultModels()
+	if l.isAudiobooks {
+		am, err := l.getAudiobookColumns()
+		if err != nil {
+			log.Fatal(err)
+		}
+		for l, m := range am {
+			models[l] = m
+		}
+	}
+	return models
 }
 
 // GetPreference gets a calibre preference.
@@ -73,37 +112,4 @@ func ListPreferences() []string {
 		HiddenCategories,
 		FieldMetadata,
 	}
-}
-
-// NewQuery initializes a database query.
-func (l *Lib) NewQuery() *Query {
-	p := filepath.Join(l.Path, l.Name, metaDB)
-	err := l.Connect(p)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	models := DefaultModels()
-
-	if l.isAudiobooks {
-		am, err := l.getAudiobookColumns()
-		if err != nil {
-			log.Fatal(err)
-		}
-		for l, m := range am {
-			models[l] = m
-		}
-	}
-
-	cols := []string{
-		//fmt.Sprintf("'%s' source", l.Name),
-		fmt.Sprintf("'source', JSON_QUOTE('%s')", l.Name),
-	}
-	for _, m := range models {
-		//fmt.Println(m.ToSqlJSON())
-		//cols = append(cols, m.ToSql())
-		cols = append(cols, m.ToSqlJSON())
-	}
-
-	return NewQueryJSON(cols)
 }

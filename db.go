@@ -69,12 +69,13 @@ func (db *DB) bookQuery(stmt string, args []any) (Records, error) {
 	defer rows.Close()
 	db.db.Unsafe()
 
-	var scanErr error
 	for rows.Next() {
-		records.rows, scanErr = rows.SliceScan()
+		meta := make(map[string]any)
+		scanErr := rows.MapScan(meta)
 		if scanErr != nil {
 			return records, scanErr
 		}
+		records.rows = append(records.rows, meta)
 	}
 	return records, nil
 }

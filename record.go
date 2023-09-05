@@ -1,6 +1,8 @@
 package cdb
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 type Records struct {
 	rows []any
@@ -45,7 +47,9 @@ func (r Records) StringMapString() ([]map[string]string, error) {
 func (r Records) rawMsg() []json.RawMessage {
 	var raw []json.RawMessage
 	for _, b := range r.rows {
-		raw = append(raw, json.RawMessage(b.(string)))
+		for _, v := range b.(map[string]any) {
+			raw = append(raw, json.RawMessage(v.(string)))
+		}
 	}
 	return raw
 }

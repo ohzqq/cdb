@@ -31,7 +31,7 @@ func NewQuery(cols []string) *Query {
 		sort: "timestamp",
 	}
 
-	q.query = sq.Select("JSON_OBJECT( \n" + strings.Join(cols, ",\n") + ")").
+	q.query = sq.Select("JSON_OBJECT( \n" + strings.Join(cols, ",\n") + ") meta").
 		From("books")
 
 	return q

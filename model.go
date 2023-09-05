@@ -245,7 +245,7 @@ func toSql(sel sq.SelectBuilder) (string, []any) {
 
 func coverStmt(lib string) (string, []any) {
 	sel := sq.Case("has_cover").
-		When("1", `IFNULL('books/' || books.id || '/cover.jpg', '')`).
+		When("1", `IFNULL('cover.jpg', '')`).
 		Else("''")
 
 	stmt, args, _ := sel.ToSql()
@@ -254,7 +254,7 @@ func coverStmt(lib string) (string, []any) {
 
 func coverStmtJSON(lib string) (string, []any) {
 	sel := sq.Case("has_cover").
-		When("1", `IFNULL('books/' || books.id || '/cover.jpg', '')`).
+		When("1", `IFNULL('cover.jpg', '')`).
 		Else("''")
 
 	stmt, args, _ := sel.ToSql()
@@ -356,7 +356,7 @@ var modelMeta = Models{
 	},
 
 	Formats: Model{
-		Column:       `'books/' || books.id || '/' || data.name || '.' || lower(format)`,
+		Column:       `data.name || '.' || lower(format)`,
 		CategorySort: "format",
 		IsCategory:   true,
 		IsEditable:   false,

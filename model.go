@@ -34,8 +34,8 @@ const (
 	Timestamp     = "timestamp"
 	Title         = "title"
 	UUID          = "uuid"
-	Duration      = "#duration"
-	Narrators     = "#narrators"
+	Duration      = "duration"
+	Narrators     = "narrators"
 )
 
 const (
@@ -302,7 +302,7 @@ var durationModel = Model{
 	CategorySort: "value",
 	IsCustom:     true,
 	IsEditable:   true,
-	Label:        "#duration",
+	Label:        "duration",
 	Name:         "duration",
 }
 
@@ -313,7 +313,7 @@ var narratorsModel = Model{
 	IsCustom:     true,
 	IsEditable:   true,
 	IsNames:      true,
-	Label:        "#narrators",
+	Label:        "narrators",
 	LinkColumn:   "value",
 	Name:         "narrator",
 }

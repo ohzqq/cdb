@@ -11,13 +11,13 @@ import (
 type Book struct {
 	Title        string     `db:"title" yaml:"title" json:"title"`
 	Authors      []string   `db:"authors" yaml:"authors,omitempty" json:"authors,omitempty"`
-	Narrators    []string   `db:"#narrators" yaml:"#narrators,omitempty" json:"#narrators,omitempty"`
+	Narrators    []string   `db:"narrators" yaml:"#narrators,omitempty" json:"narrators,omitempty"`
 	Series       string     `db:"series" yaml:"series,omitempty" json:"series,omitempty"`
 	SeriesIndex  float64    `db:"series_index" yaml:"series_index,omitempty" json:"series_index,omitempty"`
 	Tags         []string   `db:"tags" yaml:"tags,omitempty" json:"tags,omitempty"`
 	Pubdate      *time.Time `db:"pubdate" yaml:"pubdate,omitempty" json:"pubdate,omitempty"`
 	Timestamp    *time.Time `db:"timestamp" yaml:"timestamp,omitempty" json:"timestamp,omitempty"`
-	Duration     string     `db:"#duration" yaml:"#duration,omitempty" json:"#duration,omitempty"`
+	Duration     string     `db:"duration" yaml:"#duration,omitempty" json:"duration,omitempty"`
 	Comments     string     `db:"comments" yaml:"comments,omitempty" json:"comments,omitempty"`
 	Rating       int        `db:"rating" yaml:"rating,omitempty" json:"rating,omitempty"`
 	Publisher    string     `db:"publisher" yaml:"publisher,omitempty" json:"publisher,omitempty"`

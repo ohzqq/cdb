@@ -95,7 +95,7 @@ func (db *DB) getAudiobookColumns() (Models, error) {
 		return models, err
 	}
 
-	key := sq.Select("id", "'#' || label 'label'", "name").
+	key := sq.Select("id", "label", "name").
 		Column(c + " 'join_table'").
 		Column("'custom_column_' || id 'table'").
 		From("custom_columns").

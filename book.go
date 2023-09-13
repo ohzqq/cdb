@@ -9,29 +9,29 @@ import (
 
 // Book represents a book record.
 type Book struct {
-	Title        string     `db:"title" yaml:"title" json:"title"`
-	Authors      []string   `db:"authors" yaml:"authors,omitempty" json:"authors,omitempty"`
-	Narrators    []string   `db:"narrators" yaml:"#narrators,omitempty" json:"narrators,omitempty"`
-	Series       string     `db:"series" yaml:"series,omitempty" json:"series,omitempty"`
-	SeriesIndex  float64    `db:"series_index" yaml:"series_index,omitempty" json:"series_index,omitempty"`
-	Tags         []string   `db:"tags" yaml:"tags,omitempty" json:"tags,omitempty"`
-	Pubdate      *time.Time `db:"pubdate" yaml:"pubdate,omitempty" json:"pubdate,omitempty"`
-	Timestamp    *time.Time `db:"timestamp" yaml:"timestamp,omitempty" json:"timestamp,omitempty"`
-	Duration     string     `db:"duration" yaml:"#duration,omitempty" json:"duration,omitempty"`
-	Comments     string     `db:"comments" yaml:"comments,omitempty" json:"comments,omitempty"`
-	Rating       int        `db:"rating" yaml:"rating,omitempty" json:"rating,omitempty"`
-	Publisher    string     `db:"publisher" yaml:"publisher,omitempty" json:"publisher,omitempty"`
-	Languages    []string   `db:"languages" yaml:"languages,omitempty" json:"languages,omitempty"`
-	Cover        string     `db:"cover" yaml:"cover,omitempty" json:"cover,omitempty"`
-	Formats      []string   `db:"formats" yaml:"formats,omitempty" json:"formats,omitempty"`
-	Identifiers  []string   `db:"identifiers" yaml:"identifiers,omitempty" json:"identifiers,omitempty"`
-	LastModified *time.Time `db:"last_modified" yaml:"last_modified,omitempty" json:"last_modified,omitempty"`
-	ID           int        `db:"id" yaml:"id,omitempty" json:"id,omitempty"`
-	AuthorSort   string     `db:"author_sort" yaml:"author_sort,omitempty" json:"author_sort,omitempty"`
-	Sort         string     `db:"sort" yaml:"sort,omitempty" json:"sort,omitempty"`
-	Path         string     `db:"path" yaml:"path,omitempty" json:"path,omitempty"`
-	UUID         string     `db:"uuid,omitempty" yaml:"uuid,omitempty" json:"uuid,omitempty"`
-	Source       string     `json:"source,omitempty"`
+	Title        string     `db:"title" yaml:"title" toml:"title" json:"title"`
+	Authors      []string   `db:"authors" yaml:"authors,omitempty" toml:"authors,omitempty" json:"authors,omitempty"`
+	Narrators    []string   `db:"narrators" yaml:"narrators,omitempty" toml:"narrators,omitempty" json:"narrators,omitempty"`
+	Series       string     `db:"series" yaml:"series,omitempty" toml:"series,omitempty" json:"series,omitempty"`
+	SeriesIndex  float64    `db:"series_index" yaml:"series_index,omitempty" toml:"series_index,omitempty" json:"series_index,omitempty"`
+	Tags         []string   `db:"tags" yaml:"tags,omitempty" toml:"tags,omitempty" json:"tags,omitempty"`
+	Pubdate      *time.Time `db:"pubdate" yaml:"pubdate,omitempty" toml:"pubdate,omitempty" json:"pubdate,omitempty"`
+	Timestamp    *time.Time `db:"timestamp" yaml:"timestamp,omitempty" toml:"timestamp,omitempty" json:"timestamp,omitempty"`
+	Duration     string     `db:"duration" yaml:"duration,omitempty" toml:"duration,omitempty" json:"duration,omitempty"`
+	Comments     string     `db:"comments" yaml:"comments,omitempty" toml:"comments,omitempty" json:"comments,omitempty"`
+	Rating       int        `db:"rating" yaml:"rating,omitempty" toml:"rating,omitempty" json:"rating,omitempty"`
+	Publisher    string     `db:"publisher" yaml:"publisher,omitempty" toml:"publisher,omitempty" json:"publisher,omitempty"`
+	Languages    []string   `db:"languages" yaml:"languages,omitempty" toml:"languages,omitempty" json:"languages,omitempty"`
+	Cover        string     `db:"cover" yaml:"cover,omitempty" toml:"cover,omitempty" json:"cover,omitempty"`
+	Formats      []string   `db:"formats" yaml:"formats,omitempty" toml:"formats,omitempty" json:"formats,omitempty"`
+	Identifiers  []string   `db:"identifiers" yaml:"identifiers,omitempty" toml:"identifiers,omitempty" json:"identifiers,omitempty"`
+	LastModified *time.Time `db:"last_modified" yaml:"last_modified,omitempty" toml:"last_modified,omitempty" json:"last_modified,omitempty"`
+	ID           int        `db:"id" yaml:"id,omitempty" toml:"id,omitempty" json:"id,omitempty"`
+	AuthorSort   string     `db:"author_sort" yaml:"author_sort,omitempty" toml:"author_sort,omitempty" json:"author_sort,omitempty"`
+	Sort         string     `db:"sort" yaml:"sort,omitempty" toml:"sort,omitempty" json:"sort,omitempty"`
+	Path         string     `db:"path" yaml:"path,omitempty" toml:"path,omitempty" json:"path,omitempty"`
+	UUID         string     `db:"uuid,omitempty" yaml:"uuid,omitempty" yaml:"uuid,omitempty" json:"uuid,omitempty"`
+	Source       string     `json:"source,omitempty" yaml:"-" toml:"-"`
 }
 
 // URL sets the path for a *url.URL and returns a string, by default returns a
@@ -147,9 +147,12 @@ func (b Book) StringMap() map[string]any {
 func (b *Book) CalibredbFlags() []string {
 	var flags []string
 	book := b.StringMapString()
-	for _, f := range AllModels().Editable() {
-		if m, ok := book[f]; ok {
-			flags = append(flags, m)
+	for l, model := range AllModels().Editable() {
+		if m, ok := book[l]; ok {
+			if model.IsCustom {
+				l = "#" + l
+			}
+			flags = append(flags, l+":"+m)
 		}
 	}
 	return flags

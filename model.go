@@ -151,11 +151,11 @@ func (m Model) Split(v string) []string {
 }
 
 // Editable returns the list of editable book fields.
-func (m Models) Editable() []string {
-	var edit []string
+func (m Models) Editable() Models {
+	edit := make(Models)
 	for l, mod := range m {
 		if mod.IsEditable {
-			edit = append(edit, l)
+			edit[l] = mod
 		}
 	}
 	return edit

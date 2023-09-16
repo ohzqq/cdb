@@ -1,9 +1,7 @@
 package cdb
 
 import (
-	"fmt"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -36,14 +34,6 @@ type Book struct {
 	Source       string     `json:"source,omitempty" yaml:"-" toml:"-"`
 }
 
-type BookEncoder interface {
-	Encode(v any) error
-}
-
-type BookDecoder interface {
-	Decode(v any) error
-}
-
 // URL sets the path for a *url.URL and returns a string, by default returns a
 // path.
 func (b *Book) URL(urlopt ...*url.URL) string {
@@ -54,22 +44,6 @@ func (b *Book) URL(urlopt ...*url.URL) string {
 	id := strconv.Itoa(b.ID)
 	u.Path = filepath.Join("/", b.Source, "books", id)
 	return u.String()
-}
-
-func (b Book) Save(f string) error {
-	if f != ".yaml" || f != ".yml" || f != ".toml" || f != ".json" {
-		return fmt.Errorf("only yaml, toml, and json can be written\n")
-	}
-
-	file, err := os.Create(b.Title + f)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (b Book) Encode(opts ...EncoderOption) {
 }
 
 // StringMapString converts a book record to map[string]string.

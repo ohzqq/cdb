@@ -112,8 +112,8 @@ func (b Book) Print(ext string, editable bool) error {
 	return enc.Encode(b)
 }
 
-func (b Book) Save(ext string, editable bool) error {
-	file, err := os.Create(b.Title + ext)
+func (b Book) Save(name, ext string, editable bool) error {
+	file, err := os.Create(name + ext)
 	if err != nil {
 		return err
 	}

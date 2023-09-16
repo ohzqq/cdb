@@ -101,13 +101,13 @@ func (b Book) StringMap() map[string]any {
 		m[k] = v
 	}
 	if v := b.Pubdate; v != nil {
-		m[Pubdate] = v
+		m[Pubdate] = *v
 	}
 	if v := b.LastModified; v != nil {
-		m[LastModified] = v
+		m[LastModified] = *v
 	}
 	if v := b.Timestamp; v != nil {
-		m[Timestamp] = v
+		m[Timestamp] = *v
 	}
 	if v := b.Authors; len(v) != 0 {
 		m[Authors] = v
@@ -156,6 +156,28 @@ func (b *Book) CalibredbFlags() []string {
 		}
 	}
 	return flags
+}
+
+func (b Book) editableStringMap() map[string]any {
+	editable := make(map[string]any)
+	book := b.StringMap()
+	for l, _ := range AllModels().Editable() {
+		if m, ok := book[l]; ok {
+			editable[l] = m
+		}
+	}
+	return editable
+}
+
+func (b Book) editableStringMapString() map[string]string {
+	editable := make(map[string]string)
+	book := b.StringMapString()
+	for l, _ := range AllModels().Editable() {
+		if m, ok := book[l]; ok {
+			editable[l] = m
+		}
+	}
+	return editable
 }
 
 func (b *Book) sharedMap() map[string]string {

@@ -3,6 +3,7 @@ module github.com/ohzqq/cdb
 go 1.20
 
 require (
+	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/Masterminds/squirrel v1.5.4 // indirect
 	github.com/danielgtaylor/casing v0.0.0-20210126043903-4e55e6373ac3 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect

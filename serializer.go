@@ -20,39 +20,48 @@ type BookDecoder interface {
 	Decode(v any) error
 }
 
-type Encode struct {
+type Serialize struct {
 	ext      string
 	editable bool
-	enc      BookEncoder
-	book     Book
-	writer   io.ReadWriter
+	rw       io.ReadWriter
 }
 
-func NewSerializer(w io.ReadWriter, ext string) *Encode {
-	return &Encode{
-		ext:    ext,
-		writer: w,
+func NewSerializer(rw io.ReadWriter, ext string) *Serialize {
+	return &Serialize{
+		ext: ext,
+		rw:  rw,
 	}
 }
 
-func (e *Encode) Editable() *Encode {
+func (e *Serialize) Editable() *Serialize {
 	e.editable = true
 	return e
 }
 
-func (e *Encode) Encode(b Book) error {
+func (e *Serialize) EncodeBook(enc BookEncoder, b Book) error {
+	if e.editable {
+		return enc.Encode(b.editableStringMap())
+	}
+	return enc.Encode(b)
+}
+
+func (e *Serialize) DecodeBook(enc BookDecoder, b *Book) error {
+	return enc.Decode(b)
+}
+
+func (e *Serialize) Encode(b Book) error {
 	var enc BookEncoder
 	switch e.ext {
 	case ".yaml", ".yml":
-		yenc := yaml.NewEncoder(e.writer)
+		yenc := yaml.NewEncoder(e.rw)
 		yenc.SetIndent(2)
 		enc = yenc
 	case ".toml":
-		tenc := toml.NewEncoder(e.writer)
+		tenc := toml.NewEncoder(e.rw)
 		tenc.Indent = "  "
 		enc = tenc
 	case ".json":
-		jenc := json.NewEncoder(e.writer)
+		jenc := json.NewEncoder(e.rw)
 		jenc.SetIndent("", "  ")
 		enc = jenc
 	default:
@@ -66,18 +75,17 @@ func (e *Encode) Encode(b Book) error {
 	return enc.Encode(b)
 }
 
-func (e *Encode) Decode(b *Book) error {
+func (e *Serialize) Decode(b *Book) error {
 	var enc BookDecoder
 	switch e.ext {
 	case ".yaml", ".yml":
-		enc = yaml.NewDecoder(e.writer)
+		enc = yaml.NewDecoder(e.rw)
 	case ".toml":
 		buf := new(bytes.Buffer)
-		buf.ReadFrom(e.writer)
+		buf.ReadFrom(e.rw)
 		return toml.Unmarshal(buf.Bytes(), b)
-	//enc = toml.NewDecoder(e.writer)
 	case ".json":
-		enc = json.NewDecoder(e.writer)
+		enc = json.NewDecoder(e.rw)
 	default:
 		return fmt.Errorf("only yaml, toml, and json can be written\n")
 	}

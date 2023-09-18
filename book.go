@@ -20,6 +20,8 @@ type Book struct {
 	Source         string     `json:"source,omitempty" yaml:"-" toml:"-"`
 }
 
+// EditableFields are fields that can be set with the calibredb set_metadata
+// command.
 type EditableFields struct {
 	Title       string     `db:"title" yaml:"title" toml:"title" json:"title"`
 	Authors     []string   `db:"authors" yaml:"authors,omitempty" toml:"authors,omitempty" json:"authors,omitempty"`

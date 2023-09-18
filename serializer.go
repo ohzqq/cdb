@@ -26,10 +26,53 @@ type Serialize struct {
 	rw       io.ReadWriter
 }
 
+type Encoder struct {
+	ext      string
+	editable bool
+	writer   io.Writer
+}
+
 func NewSerializer(rw io.ReadWriter, ext string) *Serialize {
 	return &Serialize{
 		ext: ext,
 		rw:  rw,
+	}
+}
+
+func NewEncoder(w io.Writer) *Encoder {
+	return &Encoder{
+		ext:      ext,
+		editable: true,
+		writer:   w,
+	}
+}
+
+func (enc *Encoder) AllFields() *Encoder {
+	enc.editable = false
+	return enc
+}
+
+func (enc *Encoder) EditableFields() *Encoder {
+	enc.editable = true
+	return enc
+}
+
+func (e *Encoder) Encode(v any) error {
+	switch e.ext {
+	case ".yaml", ".yml":
+		yenc := yaml.NewEncoder(e.writer)
+		yenc.SetIndent(2)
+		return yenc.Encode(v)
+	case ".toml":
+		tenc := toml.NewEncoder(e.writer)
+		tenc.Indent = "  "
+		return tenc.Encode(v)
+	case ".json":
+		fallthrough
+	default:
+		jenc := json.NewEncoder(e.writer)
+		jenc.SetIndent("", "  ")
+		return jenc.Encode(v)
 	}
 }
 

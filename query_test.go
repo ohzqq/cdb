@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/danielgtaylor/casing"
 	"github.com/spf13/viper"
 )
 
@@ -43,12 +44,25 @@ func TestSaveMetadata(t *testing.T) {
 	}
 
 	for _, book := range books {
-		name := filepath.Join("testdata", book.Title)
+		name := filepath.Join("testdata", casing.Snake(book.Title))
 		for _, ext := range []string{".json", ".toml", ".yaml"} {
 			err := book.Save(name, ext, true)
 			if err != nil {
 				fmt.Printf("error %v\n", err)
 			}
+		}
+	}
+}
+
+func TestCalibreFlags(t *testing.T) {
+	books, err := booksByID()
+	if err != nil {
+		fmt.Printf("error %v\n", err)
+	}
+	for _, book := range books {
+		flags := book.CalibredbFlags()
+		for _, f := range flags {
+			println(f)
 		}
 	}
 }
@@ -89,9 +103,8 @@ func TestReadMetadata(t *testing.T) {
 
 		for k, v := range nb.editableStringMapString() {
 			if o := book[k]; o != v {
-				t.Errorf("original meta %#v != read meta %#v\n", o, v)
+				t.Errorf("file %s\n%v: original meta %#v != read meta %#v\n", file, k, o, v)
 			}
 		}
 	}
-
 }

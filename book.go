@@ -9,15 +9,15 @@ import (
 
 // Book represents a book record.
 type Book struct {
-	EditableFields
-	Timestamp    *time.Time `db:"timestamp" yaml:"timestamp,omitempty" toml:"timestamp,omitempty" json:"timestamp,omitempty"`
-	Cover        string     `db:"cover" yaml:"cover,omitempty" toml:"cover,omitempty" json:"cover,omitempty"`
-	Formats      []string   `db:"formats" yaml:"formats,omitempty" toml:"formats,omitempty" json:"formats,omitempty"`
-	LastModified *time.Time `db:"last_modified" yaml:"last_modified,omitempty" toml:"last_modified,omitempty" json:"last_modified,omitempty"`
-	ID           int        `db:"id" yaml:"id,omitempty" toml:"id,omitempty" json:"id,omitempty"`
-	Path         string     `db:"path" yaml:"path,omitempty" toml:"path,omitempty" json:"path,omitempty"`
-	UUID         string     `db:"uuid,omitempty" yaml:"uuid,omitempty" toml:"uuid,omitempty" json:"uuid,omitempty"`
-	Source       string     `json:"source,omitempty" yaml:"-" toml:"-"`
+	EditableFields `yaml:",inline"`
+	Timestamp      *time.Time `db:"timestamp" yaml:"timestamp,omitempty" toml:"timestamp,omitempty" json:"timestamp,omitempty"`
+	Cover          string     `db:"cover" yaml:"cover,omitempty" toml:"cover,omitempty" json:"cover,omitempty"`
+	Formats        []string   `db:"formats" yaml:"formats,omitempty" toml:"formats,omitempty" json:"formats,omitempty"`
+	LastModified   *time.Time `db:"last_modified" yaml:"last_modified,omitempty" toml:"last_modified,omitempty" json:"last_modified,omitempty"`
+	ID             int        `db:"id" yaml:"id,omitempty" toml:"id,omitempty" json:"id,omitempty"`
+	Path           string     `db:"path" yaml:"path,omitempty" toml:"path,omitempty" json:"path,omitempty"`
+	UUID           string     `db:"uuid,omitempty" yaml:"uuid,omitempty" toml:"uuid,omitempty" json:"uuid,omitempty"`
+	Source         string     `json:"source,omitempty" yaml:"-" toml:"-"`
 }
 
 type EditableFields struct {
@@ -50,6 +50,19 @@ func (b *Book) URL(urlopt ...*url.URL) string {
 	return u.String()
 }
 
+// CalibredbFlags is a convenience method for returning a slice of metadata
+// fields to use with the 'set_metadata' command.
+func (b *Book) CalibredbFlags() []string {
+	var flags []string
+	for k, v := range b.editableStringMapString() {
+		if GetModel(k).IsCustom {
+			k = "#" + k
+		}
+		flags = append(flags, k+":"+v)
+	}
+	return flags
+}
+
 // StringMapString converts a book record to map[string]string.
 func (b Book) StringMapString() map[string]string {
 	m := make(map[string]string)
@@ -65,12 +78,14 @@ func (b Book) StringMapString() map[string]string {
 	if v := b.Timestamp; v != nil {
 		m[Timestamp] = v.Format(time.DateOnly)
 	}
+
 	if v := b.Authors; len(v) != 0 {
 		m[Authors] = GetModel(Authors).Join(v)
 	}
 	if v := b.Narrators; len(v) != 0 {
 		m[Narrators] = GetModel(Narrators).Join(v)
 	}
+
 	if v := b.Tags; len(v) != 0 {
 		m[Tags] = GetModel(Tags).Join(v)
 	}
@@ -83,15 +98,14 @@ func (b Book) StringMapString() map[string]string {
 	if v := b.Identifiers; len(v) != 0 {
 		m[Identifiers] = GetModel(Identifiers).Join(v)
 	}
-	if v := b.Duration; v != "" {
-		m[Duration] = v
-	}
+
 	if v := b.Rating; v != 0 {
 		m[Rating] = strconv.Itoa(v)
 	}
 	if v := b.ID; v != 0 {
 		m[ID] = strconv.Itoa(v)
 	}
+
 	if v := b.SeriesIndex; v >= 0 {
 		m[SeriesIndex] = strconv.FormatFloat(v, 'f', -1, 64)
 	}
@@ -104,6 +118,7 @@ func (b Book) StringMap() map[string]any {
 	for k, v := range b.sharedMap() {
 		m[k] = v
 	}
+
 	if v := b.Pubdate; v != nil {
 		m[Pubdate] = *v
 	}
@@ -113,12 +128,14 @@ func (b Book) StringMap() map[string]any {
 	if v := b.Timestamp; v != nil {
 		m[Timestamp] = *v
 	}
+
 	if v := b.Authors; len(v) != 0 {
 		m[Authors] = v
 	}
 	if v := b.Narrators; len(v) != 0 {
 		m[Narrators] = v
 	}
+
 	if v := b.Tags; len(v) != 0 {
 		m[Tags] = v
 	}
@@ -131,35 +148,18 @@ func (b Book) StringMap() map[string]any {
 	if v := b.Identifiers; len(v) != 0 {
 		m[Identifiers] = v
 	}
-	if v := b.Duration; v != "" {
-		m[Duration] = v
-	}
+
 	if v := b.Rating; v != 0 {
 		m[Rating] = v
 	}
 	if v := b.ID; v != 0 {
 		m[ID] = v
 	}
+
 	if v := b.SeriesIndex; v >= 0 {
 		m[SeriesIndex] = v
 	}
 	return m
-}
-
-// CalibredbFlags is a convenience method for returning a slice of metadata
-// fields to use with the 'set_metadata' command.
-func (b *Book) CalibredbFlags() []string {
-	var flags []string
-	book := b.StringMapString()
-	for l, model := range AllModels().Editable() {
-		if m, ok := book[l]; ok {
-			if model.IsCustom {
-				l = "#" + l
-			}
-			flags = append(flags, l+":"+m)
-		}
-	}
-	return flags
 }
 
 func (b Book) editableStringMap() map[string]any {
@@ -195,6 +195,9 @@ func (b *Book) sharedMap() map[string]string {
 	}
 	if v := b.Comments; v != "" {
 		book[Comments] = v
+	}
+	if v := b.Duration; v != "" {
+		book[Duration] = v
 	}
 	if v := b.Publisher; v != "" {
 		book[Publisher] = v

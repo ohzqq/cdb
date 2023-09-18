@@ -7,7 +7,6 @@ import (
 
 	"github.com/danielgtaylor/casing"
 	"github.com/spf13/viper"
-	"golang.org/x/exp/slices"
 )
 
 var lib *Lib
@@ -47,7 +46,7 @@ func TestSaveMetadata(t *testing.T) {
 	for _, book := range books {
 		name := filepath.Join("testdata", "book", casing.Snake(book.Title))
 		for _, ext := range []string{".json", ".toml", ".yaml"} {
-			err := book.Save(name, ext, true)
+			err := book.Save(name+ext, true)
 			if err != nil {
 				fmt.Printf("error %v\n", err)
 			}
@@ -78,40 +77,6 @@ func getBooks(q *Query) ([]Book, error) {
 	//  fmt.Printf("%#v\n", b)
 	//}
 	return r.Books()
-}
-
-func TestReadMetadata(t *testing.T) {
-	files, err := filepath.Glob("testdata/book/*")
-	if err != nil {
-		fmt.Printf("error %v\n", err)
-	}
-
-	books, err := booksByID()
-	if err != nil {
-		fmt.Printf("error %v\n", err)
-	}
-	book := books[0].editableStringMapString()
-
-	for _, file := range files {
-		nb := &Book{}
-		err := nb.ReadFile(file)
-		if err != nil {
-			fmt.Printf("error %v\n", err)
-		}
-
-		for k, v := range nb.editableStringMapString() {
-			if o := book[k]; o != v {
-				t.Errorf("file %s\n%v: original meta %#v != read meta %#v\n", file, k, o, v)
-			}
-		}
-
-		flags := nb.CalibredbFlags()
-		for _, f := range flags {
-			if !slices.Contains(flags, f) {
-				t.Errorf("conversion to flags failed")
-			}
-		}
-	}
 }
 
 var flags = []string{

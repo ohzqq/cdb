@@ -2,6 +2,7 @@ package cdb
 
 import (
 	"net/url"
+	"os"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -10,34 +11,34 @@ import (
 // Book represents a book record.
 type Book struct {
 	EditableFields `yaml:",inline"`
-	Timestamp      *time.Time `db:"timestamp" yaml:"timestamp,omitempty" toml:"timestamp,omitempty" json:"timestamp,omitempty"`
-	Cover          string     `db:"cover" yaml:"cover,omitempty" toml:"cover,omitempty" json:"cover,omitempty"`
-	Formats        []string   `db:"formats" yaml:"formats,omitempty" toml:"formats,omitempty" json:"formats,omitempty"`
-	LastModified   *time.Time `db:"last_modified" yaml:"last_modified,omitempty" toml:"last_modified,omitempty" json:"last_modified,omitempty"`
-	ID             int        `db:"id" yaml:"id,omitempty" toml:"id,omitempty" json:"id,omitempty"`
-	Path           string     `db:"path" yaml:"path,omitempty" toml:"path,omitempty" json:"path,omitempty"`
-	UUID           string     `db:"uuid,omitempty" yaml:"uuid,omitempty" toml:"uuid,omitempty" json:"uuid,omitempty"`
-	Source         string     `json:"source,omitempty" yaml:"-" toml:"-"`
+	Timestamp      time.Time `db:"timestamp" yaml:"timestamp,omitempty" toml:"timestamp,omitempty" json:"timestamp,omitempty"`
+	Cover          string    `db:"cover" yaml:"cover,omitempty" toml:"cover,omitempty" json:"cover,omitempty"`
+	Formats        []string  `db:"formats" yaml:"formats,omitempty" toml:"formats,omitempty" json:"formats,omitempty"`
+	LastModified   time.Time `db:"last_modified" yaml:"last_modified,omitempty" toml:"last_modified,omitempty" json:"last_modified,omitempty"`
+	ID             int       `db:"id" yaml:"id,omitempty" toml:"id,omitempty" json:"id,omitempty"`
+	Path           string    `db:"path" yaml:"path,omitempty" toml:"path,omitempty" json:"path,omitempty"`
+	UUID           string    `db:"uuid,omitempty" yaml:"uuid,omitempty" toml:"uuid,omitempty" json:"uuid,omitempty"`
+	Source         string    `json:"source,omitempty" yaml:"-" toml:"-"`
 }
 
 // EditableFields are fields that can be set with the calibredb set_metadata
 // command.
 type EditableFields struct {
-	Title       string     `db:"title" yaml:"title" toml:"title" json:"title"`
-	Authors     []string   `db:"authors" yaml:"authors,omitempty" toml:"authors,omitempty" json:"authors,omitempty"`
-	Narrators   []string   `db:"narrators" yaml:"narrators,omitempty" toml:"narrators,omitempty" json:"narrators,omitempty"`
-	Series      string     `db:"series" yaml:"series,omitempty" toml:"series,omitempty" json:"series,omitempty"`
-	SeriesIndex float64    `db:"series_index" yaml:"series_index,omitempty" toml:"series_index,omitempty" json:"series_index,omitempty"`
-	Tags        []string   `db:"tags" yaml:"tags,omitempty" toml:"tags,omitempty" json:"tags,omitempty"`
-	Pubdate     *time.Time `db:"pubdate" yaml:"pubdate,omitempty" toml:"pubdate,omitempty" json:"pubdate,omitempty"`
-	Duration    string     `db:"duration" yaml:"duration,omitempty" toml:"duration,omitempty" json:"duration,omitempty"`
-	Comments    string     `db:"comments" yaml:"comments,omitempty" toml:"comments,omitempty" json:"comments,omitempty"`
-	Rating      int        `db:"rating" yaml:"rating,omitempty" toml:"rating,omitempty" json:"rating,omitempty"`
-	Publisher   string     `db:"publisher" yaml:"publisher,omitempty" toml:"publisher,omitempty" json:"publisher,omitempty"`
-	Languages   []string   `db:"languages" yaml:"languages,omitempty" toml:"languages,omitempty" json:"languages,omitempty"`
-	Identifiers []string   `db:"identifiers" yaml:"identifiers,omitempty" toml:"identifiers,omitempty" json:"identifiers,omitempty"`
-	AuthorSort  string     `db:"author_sort" yaml:"author_sort,omitempty" toml:"author_sort,omitempty" json:"author_sort,omitempty"`
-	Sort        string     `db:"sort" yaml:"sort,omitempty" toml:"sort,omitempty" json:"sort,omitempty"`
+	Title       string    `db:"title" yaml:"title" toml:"title" json:"title"`
+	Authors     []string  `db:"authors" yaml:"authors,omitempty" toml:"authors,omitempty" json:"authors,omitempty"`
+	Narrators   []string  `db:"narrators" yaml:"narrators,omitempty" toml:"narrators,omitempty" json:"narrators,omitempty"`
+	Series      string    `db:"series" yaml:"series,omitempty" toml:"series,omitempty" json:"series,omitempty"`
+	SeriesIndex float64   `db:"series_index" yaml:"series_index,omitempty" toml:"series_index,omitempty" json:"series_index,omitempty"`
+	Tags        []string  `db:"tags" yaml:"tags,omitempty" toml:"tags,omitempty" json:"tags,omitempty"`
+	Pubdate     time.Time `db:"pubdate" yaml:"pubdate,omitempty" toml:"pubdate,omitempty" json:"pubdate,omitempty"`
+	Duration    string    `db:"duration" yaml:"duration,omitempty" toml:"duration,omitempty" json:"duration,omitempty"`
+	Comments    string    `db:"comments" yaml:"comments,omitempty" toml:"comments,omitempty" json:"comments,omitempty"`
+	Rating      int       `db:"rating" yaml:"rating,omitempty" toml:"rating,omitempty" json:"rating,omitempty"`
+	Publisher   string    `db:"publisher" yaml:"publisher,omitempty" toml:"publisher,omitempty" json:"publisher,omitempty"`
+	Languages   []string  `db:"languages" yaml:"languages,omitempty" toml:"languages,omitempty" json:"languages,omitempty"`
+	Identifiers []string  `db:"identifiers" yaml:"identifiers,omitempty" toml:"identifiers,omitempty" json:"identifiers,omitempty"`
+	AuthorSort  string    `db:"author_sort" yaml:"author_sort,omitempty" toml:"author_sort,omitempty" json:"author_sort,omitempty"`
+	Sort        string    `db:"sort" yaml:"sort,omitempty" toml:"sort,omitempty" json:"sort,omitempty"`
 }
 
 // URL sets the path for a *url.URL and returns a string, by default returns a
@@ -65,19 +66,43 @@ func (b *Book) CalibredbFlags() []string {
 	return flags
 }
 
+func (b Book) Print(ext string, editable bool) error {
+	enc := NewEncoder(os.Stdout).Format(ext)
+	enc.indent = true
+	if editable {
+		return enc.Encode(b.EditableFields)
+	}
+	return enc.Encode(b)
+}
+
+func (b Book) Save(name string, editable bool) error {
+	file, err := os.Create(name)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	ext := filepath.Ext(name)
+	enc := NewEncoder(file).Format(ext)
+	if editable {
+		return enc.Encode(b.EditableFields)
+	}
+	return enc.Encode(b)
+}
+
 // StringMapString converts a book record to map[string]string.
 func (b Book) StringMapString() map[string]string {
 	m := make(map[string]string)
 	for k, v := range b.sharedMap() {
 		m[k] = v
 	}
-	if v := b.Pubdate; v != nil {
+	if v := b.Pubdate; !v.IsZero() {
 		m[Pubdate] = v.Format(time.DateOnly)
 	}
-	if v := b.LastModified; v != nil {
+	if v := b.LastModified; !v.IsZero() {
 		m[LastModified] = v.Format(time.DateOnly)
 	}
-	if v := b.Timestamp; v != nil {
+	if v := b.Timestamp; !v.IsZero() {
 		m[Timestamp] = v.Format(time.DateOnly)
 	}
 
@@ -121,14 +146,14 @@ func (b Book) StringMap() map[string]any {
 		m[k] = v
 	}
 
-	if v := b.Pubdate; v != nil {
-		m[Pubdate] = *v
+	if v := b.Pubdate; !v.IsZero() {
+		m[Pubdate] = v
 	}
-	if v := b.LastModified; v != nil {
-		m[LastModified] = *v
+	if v := b.LastModified; !v.IsZero() {
+		m[LastModified] = v
 	}
-	if v := b.Timestamp; v != nil {
-		m[Timestamp] = *v
+	if v := b.Timestamp; !v.IsZero() {
+		m[Timestamp] = v
 	}
 
 	if v := b.Authors; len(v) != 0 {

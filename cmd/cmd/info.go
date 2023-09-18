@@ -15,12 +15,16 @@ var infoCmd = &cobra.Command{
 	Short:  "info about your calibre libs",
 	PreRun: debug,
 	Run: func(cmd *cobra.Command, args []string) {
-		lib := cdb.NewLib(
-			"audiobooks",
-			viper.GetString("libraries.audiobooks.path"),
-			cdb.IsAudiobooks(),
-		)
-		fmt.Printf("All Libraries: %v\n", lib)
+		for l, _ := range viper.GetStringMap("libraries") {
+			key := "libraries." + l
+			var opts []cdb.Option
+			if viper.GetBool(key + ".audiobooks") {
+				opts = append(opts, cdb.IsAudiobooks())
+			}
+			lib := cdb.NewLib(l, viper.GetString(key+".path"), opts...)
+
+			fmt.Printf("Name: %s\nPath: %s\nIsAudiobooks: %v\n\n", lib.Name, lib.Path, lib.IsAudiobooks)
+		}
 	},
 }
 

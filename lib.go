@@ -13,7 +13,7 @@ type Lib struct {
 	*DB
 	Name         string
 	Path         string
-	isAudiobooks bool
+	IsAudiobooks bool
 }
 
 // Option is a set a library option.
@@ -22,7 +22,7 @@ type Option func(*Lib)
 // IsAudiobooks marks a library as containing audiobooks.
 func IsAudiobooks() Option {
 	return func(l *Lib) {
-		l.isAudiobooks = true
+		l.IsAudiobooks = true
 	}
 }
 
@@ -76,7 +76,7 @@ func (l *Lib) NewQuery() *Query {
 
 func (l *Lib) models() Models {
 	models := DefaultModels()
-	if l.isAudiobooks {
+	if l.IsAudiobooks {
 		am, err := l.getAudiobookColumns()
 		if err != nil {
 			log.Fatal(err)

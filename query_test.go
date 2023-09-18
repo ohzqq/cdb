@@ -58,6 +58,13 @@ func getBooks(q *Query) ([]Book, error) {
 	if err != nil {
 		fmt.Printf("error %v\n", err)
 	}
+	books, err := r.Books()
+	if err != nil {
+		fmt.Printf("error %v\n", err)
+	}
+	for _, b := range books {
+		fmt.Printf("%#v\n", b)
+	}
 	return r.Books()
 }
 

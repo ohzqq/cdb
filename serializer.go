@@ -40,7 +40,7 @@ func (e *Serialize) Editable() *Serialize {
 
 func (e *Serialize) EncodeBook(enc BookEncoder, b Book) error {
 	if e.editable {
-		return enc.Encode(b.editableStringMap())
+		return enc.Encode(b.EditableFields)
 	}
 	return enc.Encode(b)
 }
@@ -69,7 +69,7 @@ func (e *Serialize) Encode(b Book) error {
 	}
 
 	if e.editable {
-		return enc.Encode(b.editableStringMap())
+		return enc.Encode(b.EditableFields)
 	}
 
 	return enc.Encode(b)

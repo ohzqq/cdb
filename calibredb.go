@@ -2,6 +2,7 @@ package cdb
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -107,22 +108,17 @@ func (c *Command) Run() (string, error) {
 		fmt.Println(stdout.String())
 	}
 
+	var cmdErr error
+	if len(stderr.Bytes()) > 0 {
+		cmdErr = errors.New(stderr.String())
+	}
+
 	var output string
 	if len(stdout.Bytes()) > 0 {
-		out := stdout.String()
-		switch c.CdbCmd {
-		//case "add":
-		//sp := strings.Split(out, ": ")
-		//output = sp[1]
-		default:
-			output = out
-		}
+		output = stdout.String()
 	}
-	if len(stderr.Bytes()) > 0 {
-		output += "\n"
-		output += stderr.String()
-	}
-	return output, nil
+
+	return output, cmdErr
 }
 
 // SrvIsOnline tests if the calibredb content server is available.

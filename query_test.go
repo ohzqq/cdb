@@ -13,9 +13,10 @@ var lib *Lib
 var books []Book
 
 func TestNewLib(t *testing.T) {
+	path := viper.GetString("libraries.audiobooks.path")
+	p := filepath.Join(path, "audiobooks")
 	lib = NewLib(
-		"audiobooks",
-		viper.GetString("libraries.audiobooks.path"),
+		p,
 		IsAudiobooks(),
 		//PrintQuery(),
 	)

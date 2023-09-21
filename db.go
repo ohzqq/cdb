@@ -60,6 +60,7 @@ func (db *DB) bookQuery(stmt string, args []any) (Records, error) {
 	if db.printQuery {
 		fmt.Println(stmt)
 	}
+
 	var records Records
 	rows, err := db.db.Queryx(stmt, args...)
 	if err != nil {

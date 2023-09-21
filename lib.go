@@ -11,6 +11,7 @@ import (
 // Lib represents a calibre library.
 type Lib struct {
 	*DB
+	path         string
 	Name         string
 	Path         string
 	IsAudiobooks bool
@@ -34,10 +35,9 @@ func PrintQuery() Option {
 }
 
 // NewLib initializes a library.
-func NewLib(name, path string, opts ...Option) *Lib {
+func NewLib(path string, opts ...Option) *Lib {
 	lib := &Lib{
-		Name: name,
-		Path: path,
+		path: path,
 		DB:   &DB{},
 	}
 	for _, opt := range opts {
@@ -58,14 +58,15 @@ func (l *Lib) GetBooks(q sq.Sqlizer) (Records, error) {
 
 // NewQuery initializes a database query.
 func (l *Lib) NewQuery() *Query {
-	p := filepath.Join(l.Path, l.Name, metaDB)
+	p := filepath.Join(l.path, metaDB)
 	err := l.Connect(p)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	name := filepath.Base(l.path)
 	cols := []string{
-		fmt.Sprintf("'source', JSON_QUOTE('%s')", l.Name),
+		fmt.Sprintf("'source', JSON_QUOTE('%s')", name),
 	}
 	for _, m := range l.models() {
 		cols = append(cols, m.ToSqlJSON())

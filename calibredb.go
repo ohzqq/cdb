@@ -118,6 +118,10 @@ func (c *Command) Run() (string, error) {
 			output = out
 		}
 	}
+	if len(stderr.Bytes()) > 0 {
+		output += "\n"
+		output += stderr.String()
+	}
 	return output, nil
 }
 

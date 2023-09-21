@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"time"
 )
 
@@ -112,9 +111,9 @@ func (c *Command) Run() (string, error) {
 	if len(stdout.Bytes()) > 0 {
 		out := stdout.String()
 		switch c.CdbCmd {
-		case "add":
-			sp := strings.Split(out, ": ")
-			output = sp[1]
+		//case "add":
+		//sp := strings.Split(out, ": ")
+		//output = sp[1]
 		default:
 			output = out
 		}

@@ -1,7 +1,7 @@
 ---
 Add: 
   Args: Files=[]string
-  Automerge: bool
+  Automerge: string
   Duplicates: bool
   Empty: bool
   Add: string

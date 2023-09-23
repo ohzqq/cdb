@@ -21,7 +21,7 @@ type command struct {
 }
 
 func ReadCommands() commands {
-	cmds, err := os.ReadFile("internal/gen/calibredb_commands.yaml")
+	cmds, err := os.ReadFile("calibredb_commands.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -3,6 +3,43 @@
 
 package cdb
 
+// RemoveFormat represents 'calibredb remove_format'.
+type RemoveFormat struct {
+	*Command
+}
+
+// SetMetadata represents 'calibredb set_metadata'.
+type SetMetadata struct {
+	*Command
+}
+
+// Field sets the --field [string] flag for 'calibredb set_metadata'.
+func (c *SetMetadata) Field(v string) *SetMetadata {
+	c.SetFlags("--field", v)
+	return c
+}
+
+// ListFields sets the --list_fields flag for 'calibredb set_metadata'.
+func (c *SetMetadata) ListFields() *SetMetadata {
+	c.SetFlags("--list_fields")
+	return c
+}
+
+// SavedSearchesList represents 'calibredb saved_searches list'.
+type SavedSearchesList struct {
+	*Command
+}
+
+// SavedSearchesAdd represents 'calibredb saved_searches add'.
+type SavedSearchesAdd struct {
+	*Command
+}
+
+// SavedSearchesRemove represents 'calibredb saved_searches remove'.
+type SavedSearchesRemove struct {
+	*Command
+}
+
 // Add represents 'calibredb add'.
 type Add struct {
 	*Command
@@ -14,9 +51,9 @@ func (c *Add) Add(v string) *Add {
 	return c
 }
 
-// Automerge sets the --automerge flag for 'calibredb add'.
-func (c *Add) Automerge() *Add {
-	c.SetFlags("--automerge")
+// Automerge sets the --automerge [string] flag for 'calibredb add'.
+func (c *Add) Automerge(v string) *Add {
+	c.SetFlags("--automerge", v)
 	return c
 }
 
@@ -69,28 +106,6 @@ type Remove struct {
 // Permanent sets the --permanent flag for 'calibredb remove'.
 func (c *Remove) Permanent() *Remove {
 	c.SetFlags("--permanent")
-	return c
-}
-
-// RemoveFormat represents 'calibredb remove_format'.
-type RemoveFormat struct {
-	*Command
-}
-
-// SetMetadata represents 'calibredb set_metadata'.
-type SetMetadata struct {
-	*Command
-}
-
-// Field sets the --field [string] flag for 'calibredb set_metadata'.
-func (c *SetMetadata) Field(v string) *SetMetadata {
-	c.SetFlags("--field", v)
-	return c
-}
-
-// ListFields sets the --list_fields flag for 'calibredb set_metadata'.
-func (c *SetMetadata) ListFields() *SetMetadata {
-	c.SetFlags("--list_fields")
 	return c
 }
 
@@ -185,20 +200,5 @@ type ShowMetadata struct {
 func (c *ShowMetadata) AsOpf() *ShowMetadata {
 	c.SetFlags("--as_opf")
 	return c
-}
-
-// SavedSearchesList represents 'calibredb saved_searches list'.
-type SavedSearchesList struct {
-	*Command
-}
-
-// SavedSearchesAdd represents 'calibredb saved_searches add'.
-type SavedSearchesAdd struct {
-	*Command
-}
-
-// SavedSearchesRemove represents 'calibredb saved_searches remove'.
-type SavedSearchesRemove struct {
-	*Command
-}
-
+}	
+	

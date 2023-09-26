@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pelletier/go-toml/v2"
 	"gopkg.in/yaml.v3"
@@ -22,7 +23,7 @@ type BookDecoder interface {
 
 type Encoder struct {
 	writer io.Writer
-	indent bool
+	indent int
 	BookEncoder
 }
 
@@ -34,6 +35,7 @@ type Decoder struct {
 func NewEncoder(w io.Writer) *Encoder {
 	enc := &Encoder{
 		writer: w,
+		indent: 2,
 	}
 	enc.Format(".json")
 	return enc
@@ -43,24 +45,32 @@ func (e *Encoder) Format(ext string) *Encoder {
 	switch ext {
 	case ".yaml", ".yml":
 		yenc := yaml.NewEncoder(e.writer)
-		if e.indent {
-			yenc.SetIndent(2)
+		if e.indent > 0 {
+			yenc.SetIndent(e.indent)
 		}
 		e.SetEncoder(yenc)
 
 	case ".toml":
 		tenc := toml.NewEncoder(e.writer)
+		if e.indent > 0 {
+			tenc.SetIndentSymbol(" ")
+		}
 		e.SetEncoder(tenc)
 
 	case ".json":
 		jenc := json.NewEncoder(e.writer)
-		if e.indent {
-			jenc.SetIndent("", "  ")
+		if e.indent > 0 {
+			jenc.SetIndent("", strings.Repeat(" ", e.indent))
 		}
 		e.SetEncoder(jenc)
 	}
 
 	return e
+}
+
+func (enc *Encoder) Indent(n int) *Encoder {
+	enc.indent = n
+	return enc
 }
 
 func (enc *Encoder) SetEncoder(b BookEncoder) *Encoder {

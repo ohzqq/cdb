@@ -10,6 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Serializer holds the options for encoding or decoding a book.
 type Serializer struct {
 	indent   int
 	Format   string
@@ -19,88 +20,109 @@ type Serializer struct {
 	decoder  BookDecoder
 }
 
+// SerializerOpt sets the options for a serializer.
 type SerializerOpt func(*Serializer)
 
+// Encoder is an interface for types that can Encode a book.
 type Encoder interface {
 	Encode(v any) error
 }
 
+// EncoderInit takes the serializer options and returns a function that
+// initializes an Encoder.
 type EncoderInit func(*Serializer) BookEncoder
+
+// BookEncoder takes a io.Writer and returns a type that can Encode a book.
 type BookEncoder func(w io.Writer) Encoder
 
+// Decoder is an interface for types that can decode a book.
 type Decoder interface {
 	Decode(v any) error
 }
 
-type BookDecoder func(r io.Reader) Decoder
+// DecoderInit takes the serializer options and returns a function that
+// initializes a Decoder.
 type DecoderInit func(*Serializer) BookDecoder
 
+// BookDecoder takes a io.Writer and returns a type that can Decode a book.
+type BookDecoder func(r io.Reader) Decoder
+
+// NewSerializer constructs a serializer for a book with options.
 func NewSerializer(b *Book, opts ...SerializerOpt) *Serializer {
-	enc := &Serializer{
+	s := &Serializer{
 		book:   b,
 		indent: 2,
 		Format: ".txt",
 	}
 
 	for _, opt := range opts {
-		opt(enc)
+		opt(s)
 	}
 
-	return enc
+	return s
 }
 
+// Decoder takes a DecoderInit and sets the BookDecoder.
 func (s *Serializer) Decoder(init DecoderInit) *Serializer {
 	s.decoder = init(s)
 	return s
 }
 
+// Encoder takes a EncoderInit and sets the BookEncoder.
 func (s *Serializer) Encoder(init EncoderInit) *Serializer {
 	s.encoder = init(s)
 	return s
 }
 
+// WithIndent sets the number of spaces for indenting.
 func WithIndent(n int) SerializerOpt {
-	return func(enc *Serializer) {
-		enc.indent = n
+	return func(s *Serializer) {
+		s.indent = n
 	}
 }
 
+// EditableOnly sets the option for serializing only editable book fields.
 func EditableOnly() SerializerOpt {
-	return func(enc *Serializer) {
-		enc.editable = true
+	return func(s *Serializer) {
+		s.editable = true
 	}
 }
 
+// WithFormat sets the encoding format extension.
 func WithFormat(ext string) SerializerOpt {
-	return func(enc *Serializer) {
-		enc.Format = ext
+	return func(s *Serializer) {
+		s.Format = ext
 	}
 }
 
-func DecodeYAML(e *Serializer) BookDecoder {
-	e.Format = ".yaml"
+// DecodeYAML configures a YAML BookDecoder.
+func DecodeYAML(s *Serializer) BookDecoder {
+	s.Format = ".yaml"
 	return func(r io.Reader) Decoder {
 		dec := yaml.NewDecoder(r)
 		return dec
 	}
 }
 
-func DecodeJSON(e *Serializer) BookDecoder {
-	e.Format = ".json"
+// DecodeJSON configures a JSON BookDecoder.
+func DecodeJSON(s *Serializer) BookDecoder {
+	s.Format = ".json"
 	return func(r io.Reader) Decoder {
 		dec := json.NewDecoder(r)
 		return dec
 	}
 }
 
-func DecodeTOML(e *Serializer) BookDecoder {
-	e.Format = ".toml"
+// DecodeTOML configures a TOML BookDecoder.
+func DecodeTOML(s *Serializer) BookDecoder {
+	s.Format = ".toml"
 	return func(r io.Reader) Decoder {
 		dec := toml.NewDecoder(r)
 		return dec
 	}
 }
 
+// ReadFile reads a file for decoding.
 func (s *Serializer) ReadFile(path string) error {
 	file, err := os.Open(path)
 	if err != nil {
@@ -111,60 +133,66 @@ func (s *Serializer) ReadFile(path string) error {
 	return s.ReadFrom(file)
 }
 
+// ReadFrom reads from io.Reader for decoding.
 func (s *Serializer) ReadFrom(r io.Reader) error {
 	d := s.decoder(r)
 	return d.Decode(s.book)
 }
 
-func EncodeYAML(e *Serializer) BookEncoder {
-	e.Format = ".yaml"
+// EncodeYAML configures a YAML BookEncoder.
+func EncodeYAML(s *Serializer) BookEncoder {
+	s.Format = ".yaml"
 	return func(w io.Writer) Encoder {
 		enc := yaml.NewEncoder(w)
-		if e.indent > 0 {
-			enc.SetIndent(e.indent)
+		if s.indent > 0 {
+			enc.SetIndent(s.indent)
 		}
 		return enc
 	}
 }
 
-func EncodeJSON(e *Serializer) BookEncoder {
-	e.Format = ".json"
+// EncodeJSON configures a JSON BookEncoder.
+func EncodeJSON(s *Serializer) BookEncoder {
+	s.Format = ".json"
 	return func(w io.Writer) Encoder {
 		enc := json.NewEncoder(w)
-		if e.indent > 0 {
-			enc.SetIndent("", strings.Repeat(" ", e.indent))
+		if s.indent > 0 {
+			enc.SetIndent("", strings.Repeat(" ", s.indent))
 		}
 		return enc
 	}
 }
 
-func EncodeTOML(e *Serializer) BookEncoder {
-	e.Format = ".toml"
+// EncodeTOML configures a TOML BookEncoder.
+func EncodeTOML(s *Serializer) BookEncoder {
+	s.Format = ".toml"
 	return func(w io.Writer) Encoder {
 		enc := toml.NewEncoder(w)
-		if e.indent > 0 {
-			enc.SetIndentSymbol(strings.Repeat(" ", e.indent))
+		if s.indent > 0 {
+			enc.SetIndentSymbol(strings.Repeat(" ", s.indent))
 		}
 		return enc
 	}
 }
 
-func (e *Serializer) WriteFile(name string) error {
-	file, err := os.Create(name + e.Format)
+// WriteFile writes an encoded book to disk.
+func (s *Serializer) WriteFile(name string) error {
+	file, err := os.Create(name + s.Format)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	return e.WriteTo(file)
+	return s.WriteTo(file)
 }
 
-func (e *Serializer) WriteTo(w io.Writer) error {
-	enc := e.encoder(w)
+// WriteTo writes an encoded book to io.Writer.
+func (s *Serializer) WriteTo(w io.Writer) error {
+	enc := s.encoder(w)
 
-	if e.editable {
-		return enc.Encode(e.book.EditableFields)
+	if s.editable {
+		return enc.Encode(s.book.EditableFields)
 	}
 
-	return enc.Encode(e.book)
+	return enc.Encode(s.book)
 }

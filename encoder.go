@@ -14,11 +14,11 @@ type Encoder interface {
 	Encode(v any) error
 }
 
-type EncoderInit func(*EncoderConfig) BookEncoder
-type EncoderOpt func(*EncoderConfig)
+type EncoderInit func(*Serializer) BookEncoder
+type SerializerOpt func(*Serializer)
 type BookEncoder func(w io.Writer) Encoder
 
-type EncoderConfig struct {
+type Serializer struct {
 	indent   int
 	Format   string
 	editable bool
@@ -27,23 +27,23 @@ type EncoderConfig struct {
 	decoder  BookDecoder
 }
 
-func (s *EncoderConfig) Decoder(init DecoderInit) *EncoderConfig {
+func (s *Serializer) Decoder(init DecoderInit) *Serializer {
 	s.decoder = init(s)
 	return s
 }
 
-func (s *EncoderConfig) Encoder(init EncoderInit) *EncoderConfig {
+func (s *Serializer) Encoder(init EncoderInit) *Serializer {
 	s.encoder = init(s)
 	return s
 }
 
-func (s *EncoderConfig) ReadFrom(r io.Reader) error {
+func (s *Serializer) ReadFrom(r io.Reader) error {
 	d := s.decoder(r)
 	return d.Decode(s.book)
 }
 
-func NewEncoder(b *Book, opts ...EncoderOpt) *EncoderConfig {
-	enc := &EncoderConfig{
+func NewEncoder(b *Book, opts ...SerializerOpt) *Serializer {
+	enc := &Serializer{
 		book:   b,
 		indent: 2,
 		Format: ".txt",
@@ -56,25 +56,25 @@ func NewEncoder(b *Book, opts ...EncoderOpt) *EncoderConfig {
 	return enc
 }
 
-func WithIndent(n int) EncoderOpt {
-	return func(enc *EncoderConfig) {
+func WithIndent(n int) SerializerOpt {
+	return func(enc *Serializer) {
 		enc.indent = n
 	}
 }
 
-func EditableOnly() EncoderOpt {
-	return func(enc *EncoderConfig) {
+func EditableOnly() SerializerOpt {
+	return func(enc *Serializer) {
 		enc.editable = true
 	}
 }
 
-func WithFormat(ext string) EncoderOpt {
-	return func(enc *EncoderConfig) {
+func WithFormat(ext string) SerializerOpt {
+	return func(enc *Serializer) {
 		enc.Format = ext
 	}
 }
 
-func EncodeYAML(e *EncoderConfig) BookEncoder {
+func EncodeYAML(e *Serializer) BookEncoder {
 	e.Format = ".yaml"
 	return func(w io.Writer) Encoder {
 		enc := yaml.NewEncoder(w)
@@ -85,7 +85,7 @@ func EncodeYAML(e *EncoderConfig) BookEncoder {
 	}
 }
 
-func EncodeJSON(e *EncoderConfig) BookEncoder {
+func EncodeJSON(e *Serializer) BookEncoder {
 	e.Format = ".json"
 	return func(w io.Writer) Encoder {
 		enc := json.NewEncoder(w)
@@ -96,7 +96,7 @@ func EncodeJSON(e *EncoderConfig) BookEncoder {
 	}
 }
 
-func EncodeTOML(e *EncoderConfig) BookEncoder {
+func EncodeTOML(e *Serializer) BookEncoder {
 	e.Format = ".toml"
 	return func(w io.Writer) Encoder {
 		enc := toml.NewEncoder(w)
@@ -107,7 +107,7 @@ func EncodeTOML(e *EncoderConfig) BookEncoder {
 	}
 }
 
-func (e *EncoderConfig) WriteFile(name string) error {
+func (e *Serializer) WriteFile(name string) error {
 	file, err := os.Create(name + e.Format)
 	if err != nil {
 		return err
@@ -117,7 +117,7 @@ func (e *EncoderConfig) WriteFile(name string) error {
 	return e.WriteTo(file)
 }
 
-func (e *EncoderConfig) WriteTo(w io.Writer) error {
+func (e *Serializer) WriteTo(w io.Writer) error {
 	enc := e.encoder(w)
 
 	if e.editable {

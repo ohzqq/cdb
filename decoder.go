@@ -14,7 +14,7 @@ type Decoder interface {
 }
 
 type BookDecoder func(r io.Reader) Decoder
-type DecoderInit func(*EncoderConfig) BookDecoder
+type DecoderInit func(*Serializer) BookDecoder
 
 type DecoderConfig struct {
 	book    *Book
@@ -23,7 +23,7 @@ type DecoderConfig struct {
 	Decoder
 }
 
-func DecodeYAML(e *EncoderConfig) BookDecoder {
+func DecodeYAML(e *Serializer) BookDecoder {
 	e.Format = ".yaml"
 	return func(r io.Reader) Decoder {
 		dec := yaml.NewDecoder(r)
@@ -31,7 +31,7 @@ func DecodeYAML(e *EncoderConfig) BookDecoder {
 	}
 }
 
-func DecodeJSON(e *EncoderConfig) BookDecoder {
+func DecodeJSON(e *Serializer) BookDecoder {
 	e.Format = ".json"
 	return func(r io.Reader) Decoder {
 		dec := json.NewDecoder(r)
@@ -39,7 +39,7 @@ func DecodeJSON(e *EncoderConfig) BookDecoder {
 	}
 }
 
-func DecodeTOML(e *EncoderConfig) BookDecoder {
+func DecodeTOML(e *Serializer) BookDecoder {
 	e.Format = ".toml"
 	return func(r io.Reader) Decoder {
 		dec := toml.NewDecoder(r)
@@ -47,7 +47,7 @@ func DecodeTOML(e *EncoderConfig) BookDecoder {
 	}
 }
 
-func (s *EncoderConfig) ReadFile(path string) error {
+func (s *Serializer) ReadFile(path string) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return err

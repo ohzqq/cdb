@@ -38,7 +38,7 @@ type EditableFields struct {
 	Identifiers []string  `db:"identifiers" yaml:"identifiers,omitempty" toml:"identifiers,omitempty" json:"identifiers,omitempty"`
 	AuthorSort  string    `db:"author_sort" yaml:"author_sort,omitempty" toml:"author_sort,omitempty" json:"author_sort,omitempty"`
 	Sort        string    `db:"sort" yaml:"sort,omitempty" toml:"sort,omitempty" json:"sort,omitempty"`
-	encoder     *EncoderConfig
+	encoder     *Serializer
 	decoder     *DecoderConfig
 }
 

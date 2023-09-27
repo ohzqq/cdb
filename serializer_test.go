@@ -15,7 +15,7 @@ func TestEncoder(t *testing.T) {
 	}
 
 	for _, b := range books {
-		enc := NewEncoder(&b, EditableOnly())
+		enc := NewSerializer(&b, EditableOnly())
 		enc.Encoder(EncodeJSON)
 		err := enc.WriteTo(os.Stdout)
 		if err != nil {
@@ -30,7 +30,7 @@ const bookData = `testdata/book/`
 func testSave(t *testing.T, books []Book) {
 	for _, b := range books {
 		for _, init := range []EncoderInit{EncodeJSON, EncodeYAML, EncodeTOML} {
-			enc := NewEncoder(&b, EditableOnly())
+			enc := NewSerializer(&b, EditableOnly())
 			enc.Encoder(init)
 			name := filepath.Join(bookData, casing.Snake(b.Title))
 
@@ -82,7 +82,7 @@ func decodeBooks(t *testing.T) []Book {
 			init = DecodeJSON
 		}
 		var book Book
-		s := NewEncoder(&book).Decoder(init)
+		s := NewSerializer(&book).Decoder(init)
 
 		err := s.ReadFile(file)
 		if err != nil {

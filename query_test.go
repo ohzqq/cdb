@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/danielgtaylor/casing"
 	"github.com/spf13/viper"
 )
 
@@ -38,22 +37,37 @@ func TestQueryByID(t *testing.T) {
 	}
 }
 
-func TestSaveMetadata(t *testing.T) {
-	books, err := booksByID()
-	if err != nil {
-		fmt.Printf("error %v\n", err)
-	}
+//func TestSaveMetadata(t *testing.T) {
+//  books, err := booksByID()
+//  if err != nil {
+//    fmt.Printf("error %v\n", err)
+//  }
 
-	for _, book := range books {
-		name := filepath.Join("testdata", "book", casing.Snake(book.Title))
-		for _, ext := range []string{".json", ".toml", ".yaml"} {
-			err := book.Save(name+ext, true)
-			if err != nil {
-				fmt.Printf("error %v\n", err)
-			}
-		}
-	}
-}
+//  for _, book := range books {
+//    name := filepath.Join("testdata", "book", casing.Snake(book.Title))
+//    for _, ext := range []string{".json", ".toml", ".yaml"} {
+//      //var opt EncoderOpt
+//      switch ext {
+//      case ".json":
+//        //opt = EncodeJSON
+//      case ".toml":
+//        //opt = EncodeTOML
+//      case ".yaml":
+//        err := book.Encode(EncodeYAML).WriteTo(os.Stdout)
+//        //err := NewEnc(book, EncodeYAML).WriteTo(os.Stdout)
+//        if err != nil {
+//          t.Error(err)
+//        }
+//        //opt = EncodeYAML
+//      }
+//      println(name)
+//      //err := book.Save(name + ext)
+//      //if err != nil {
+//      //  fmt.Printf("error %v\n", err)
+//      //}
+//    }
+//  }
+//}
 
 //func TestCalibreFlags(t *testing.T) {
 //  books, err := booksByID()

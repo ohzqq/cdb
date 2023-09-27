@@ -2,7 +2,6 @@ package cdb
 
 import (
 	"net/url"
-	"os"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -39,6 +38,8 @@ type EditableFields struct {
 	Identifiers []string  `db:"identifiers" yaml:"identifiers,omitempty" toml:"identifiers,omitempty" json:"identifiers,omitempty"`
 	AuthorSort  string    `db:"author_sort" yaml:"author_sort,omitempty" toml:"author_sort,omitempty" json:"author_sort,omitempty"`
 	Sort        string    `db:"sort" yaml:"sort,omitempty" toml:"sort,omitempty" json:"sort,omitempty"`
+	encoder     *Encoder
+	decoder     *Decoder
 }
 
 // URL sets the path for a *url.URL and returns a string, by default returns a
@@ -66,28 +67,8 @@ func (b *Book) CalibredbFlags() []string {
 	return flags
 }
 
-func (b Book) Print(ext string, editable bool) error {
-	enc := NewEncoder(os.Stdout).Format(ext)
-	enc.indent = true
-	if editable {
-		return enc.Encode(b.EditableFields)
-	}
-	return enc.Encode(b)
-}
-
-func (b Book) Save(name string, editable bool) error {
-	file, err := os.Create(name)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	ext := filepath.Ext(name)
-	enc := NewEncoder(file).Format(ext)
-	if editable {
-		return enc.Encode(b.EditableFields)
-	}
-	return enc.Encode(b)
+func (b Book) Encode(init EncoderConfig, opts ...EncoderOpt) *Encoder {
+	return NewEncoder(b, init, opts...)
 }
 
 // StringMapString converts a book record to map[string]string.

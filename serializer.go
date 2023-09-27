@@ -59,6 +59,24 @@ func (s *Serializer) Encoder(init EncoderInit) *Serializer {
 	return s
 }
 
+func WithIndent(n int) SerializerOpt {
+	return func(enc *Serializer) {
+		enc.indent = n
+	}
+}
+
+func EditableOnly() SerializerOpt {
+	return func(enc *Serializer) {
+		enc.editable = true
+	}
+}
+
+func WithFormat(ext string) SerializerOpt {
+	return func(enc *Serializer) {
+		enc.Format = ext
+	}
+}
+
 func DecodeYAML(e *Serializer) BookDecoder {
 	e.Format = ".yaml"
 	return func(r io.Reader) Decoder {
@@ -96,24 +114,6 @@ func (s *Serializer) ReadFile(path string) error {
 func (s *Serializer) ReadFrom(r io.Reader) error {
 	d := s.decoder(r)
 	return d.Decode(s.book)
-}
-
-func WithIndent(n int) SerializerOpt {
-	return func(enc *Serializer) {
-		enc.indent = n
-	}
-}
-
-func EditableOnly() SerializerOpt {
-	return func(enc *Serializer) {
-		enc.editable = true
-	}
-}
-
-func WithFormat(ext string) SerializerOpt {
-	return func(enc *Serializer) {
-		enc.Format = ext
-	}
 }
 
 func EncodeYAML(e *Serializer) BookEncoder {

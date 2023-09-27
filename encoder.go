@@ -6,29 +6,47 @@ import (
 	"os"
 	"strings"
 
-	"github.com/danielgtaylor/casing"
 	"github.com/pelletier/go-toml/v2"
 	"gopkg.in/yaml.v3"
 )
 
-type EncoderConfig func(*Encoder) EncoderFunc
-type EncoderOpt func(*Encoder)
-type EncoderFunc func(w io.Writer) BookEncoder
-
-type Encoder struct {
-	indent   int
-	format   string
-	editable bool
-	book     Book
-	init     EncoderConfig
+type Encoder interface {
+	Encode(v any) error
 }
 
-func NewEncoder(b Book, init EncoderConfig, opts ...EncoderOpt) *Encoder {
-	enc := &Encoder{
+type EncoderInit func(*EncoderConfig) BookEncoder
+type EncoderOpt func(*EncoderConfig)
+type BookEncoder func(w io.Writer) Encoder
+
+type EncoderConfig struct {
+	indent   int
+	Format   string
+	editable bool
+	book     *Book
+	encoder  BookEncoder
+	decoder  BookDecoder
+}
+
+func (s *EncoderConfig) Decoder(init DecoderInit) *EncoderConfig {
+	s.decoder = init(s)
+	return s
+}
+
+func (s *EncoderConfig) Encoder(init EncoderInit) *EncoderConfig {
+	s.encoder = init(s)
+	return s
+}
+
+func (s *EncoderConfig) ReadFrom(r io.Reader) error {
+	d := s.decoder(r)
+	return d.Decode(s.book)
+}
+
+func NewEncoder(b *Book, opts ...EncoderOpt) *EncoderConfig {
+	enc := &EncoderConfig{
 		book:   b,
 		indent: 2,
-		init:   init,
-		format: ".txt",
+		Format: ".txt",
 	}
 
 	for _, opt := range opts {
@@ -39,26 +57,26 @@ func NewEncoder(b Book, init EncoderConfig, opts ...EncoderOpt) *Encoder {
 }
 
 func WithIndent(n int) EncoderOpt {
-	return func(enc *Encoder) {
+	return func(enc *EncoderConfig) {
 		enc.indent = n
 	}
 }
 
 func EditableOnly() EncoderOpt {
-	return func(enc *Encoder) {
+	return func(enc *EncoderConfig) {
 		enc.editable = true
 	}
 }
 
 func WithFormat(ext string) EncoderOpt {
-	return func(enc *Encoder) {
-		enc.format = ext
+	return func(enc *EncoderConfig) {
+		enc.Format = ext
 	}
 }
 
-func EncodeYAML(e *Encoder) EncoderFunc {
-	return func(w io.Writer) BookEncoder {
-		e.format = ".yaml"
+func EncodeYAML(e *EncoderConfig) BookEncoder {
+	e.Format = ".yaml"
+	return func(w io.Writer) Encoder {
 		enc := yaml.NewEncoder(w)
 		if e.indent > 0 {
 			enc.SetIndent(e.indent)
@@ -67,9 +85,9 @@ func EncodeYAML(e *Encoder) EncoderFunc {
 	}
 }
 
-func EncodeJSON(e *Encoder) EncoderFunc {
-	return func(w io.Writer) BookEncoder {
-		e.format = ".json"
+func EncodeJSON(e *EncoderConfig) BookEncoder {
+	e.Format = ".json"
+	return func(w io.Writer) Encoder {
 		enc := json.NewEncoder(w)
 		if e.indent > 0 {
 			enc.SetIndent("", strings.Repeat(" ", e.indent))
@@ -78,38 +96,33 @@ func EncodeJSON(e *Encoder) EncoderFunc {
 	}
 }
 
-func EncodeTOML(e *Encoder) EncoderFunc {
-	return func(w io.Writer) BookEncoder {
+func EncodeTOML(e *EncoderConfig) BookEncoder {
+	e.Format = ".toml"
+	return func(w io.Writer) Encoder {
 		enc := toml.NewEncoder(w)
 		if e.indent > 0 {
 			enc.SetIndentSymbol(strings.Repeat(" ", e.indent))
 		}
-		e.format = ".toml"
 		return enc
 	}
 }
 
-func (e *Encoder) WriteTo(w io.Writer) error {
-	fn := e.init(e)
-	enc := fn(w)
-
-	if e.editable {
-		return enc.Encode(e.book.EditableFields)
-	}
-
-	return enc.Encode(e.book)
-}
-
-func (e *Encoder) Save(name string) error {
-	if name == "" {
-		name = casing.Snake(e.book.Title)
-	}
-
-	file, err := os.Create(name + e.format)
+func (e *EncoderConfig) WriteFile(name string) error {
+	file, err := os.Create(name + e.Format)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
 	return e.WriteTo(file)
+}
+
+func (e *EncoderConfig) WriteTo(w io.Writer) error {
+	enc := e.encoder(w)
+
+	if e.editable {
+		return enc.Encode(e.book.EditableFields)
+	}
+
+	return enc.Encode(e.book)
 }

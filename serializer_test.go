@@ -1,58 +1,94 @@
 package cdb
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/danielgtaylor/casing"
 )
 
 func TestEncoder(t *testing.T) {
 	books, err := booksByID()
 	if err != nil {
-		fmt.Printf("error %v\n", err)
+		t.Errorf("error %v\n", err)
 	}
 
 	for _, b := range books {
-		//enc := NewEncoder(b, EncodeJSON)
-		enc := NewEncoder(b, EncodeJSON, EditableOnly())
+		enc := NewEncoder(&b, EditableOnly())
+		enc.Encoder(EncodeJSON)
 		err := enc.WriteTo(os.Stdout)
 		if err != nil {
 			t.Error(err)
 		}
-		err = enc.Save("")
-		if err != nil {
-			t.Error(err)
-		}
+	}
+	//testSave(t, books)
+}
 
-		//enc.FEncode(os.Stdout, EncodeYAML(enc))
-		//for _, f := range []string{".json", ".yaml", ".yml", ".toml"} {
-		//b.SetEncoder(WithFormat(f))
-		//b.Encode(os.Stdout)
-		//}
+const bookData = `testdata/book/`
+
+func testSave(t *testing.T, books []Book) {
+	for _, b := range books {
+		for _, init := range []EncoderInit{EncodeJSON, EncodeYAML, EncodeTOML} {
+			enc := NewEncoder(&b, EditableOnly())
+			enc.Encoder(init)
+			name := filepath.Join(bookData, casing.Snake(b.Title))
+
+			file, err := os.Create(name + enc.Format)
+			if err != nil {
+				t.Error(err)
+			}
+			defer file.Close()
+
+			err = enc.WriteTo(file)
+			if err != nil {
+				t.Error(err)
+			}
+		}
 	}
 }
 
 func TestDecoder(t *testing.T) {
-	files, err := filepath.Glob("testdata/book/*")
-	if err != nil {
-		fmt.Printf("error %v\n", err)
-	}
-
 	books, err := booksByID()
 	if err != nil {
-		fmt.Printf("error %v\n", err)
+		t.Errorf("error %v\n", err)
 	}
+
+	og := books[0]
+
+	for _, book := range decodeBooks(t) {
+		if book.Title != og.Title {
+			t.Errorf("decoded title was %s, expected %s\n", book.Title, og.Title)
+		}
+	}
+}
+
+func decodeBooks(t *testing.T) []Book {
+	files, err := filepath.Glob("testdata/book/*")
+	if err != nil {
+		t.Errorf("error %v\n", err)
+	}
+
+	var books []Book
 	for _, file := range files {
-		d, err := ReadMetadataFile(file)
+		var init DecoderInit
+		ext := filepath.Ext(file)
+		switch ext {
+		case ".yaml", ".yml":
+			init = DecodeYAML
+		case ".toml":
+			init = DecodeTOML
+		case ".json":
+			init = DecodeJSON
+		}
+		var book Book
+		s := NewEncoder(&book).Decoder(init)
+
+		err := s.ReadFile(file)
 		if err != nil {
 			t.Errorf("%v", err)
 		}
-
-		var book Book
-		d.Decode(&book)
-		if books[0].Title != book.Title {
-			t.Errorf("decoded title was %s, expected %s", book.Title, books[0].Title)
-		}
+		books = append(books, book)
 	}
+	return books
 }

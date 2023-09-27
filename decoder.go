@@ -1,69 +1,58 @@
 package cdb
 
 import (
-	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 
 	"github.com/pelletier/go-toml/v2"
 	"gopkg.in/yaml.v3"
 )
 
-type BookEncoder interface {
-	Encode(v any) error
-}
-
-type BookDecoder interface {
+type Decoder interface {
 	Decode(v any) error
 }
 
-type Decoder struct {
-	book   Book
-	reader io.Reader
-	BookDecoder
+type BookDecoder func(r io.Reader) Decoder
+type DecoderInit func(*EncoderConfig) BookDecoder
+
+type DecoderConfig struct {
+	book    *Book
+	Ext     string
+	decoder BookDecoder
+	Decoder
 }
 
-func NewDecoder(r io.Reader) *Decoder {
-	dec := &Decoder{
-		reader: r,
+func DecodeYAML(e *EncoderConfig) BookDecoder {
+	e.Format = ".yaml"
+	return func(r io.Reader) Decoder {
+		dec := yaml.NewDecoder(r)
+		return dec
 	}
-	return dec
 }
 
-func ReadMetadataFile(path string) (*Decoder, error) {
-	data, err := os.ReadFile(path)
+func DecodeJSON(e *EncoderConfig) BookDecoder {
+	e.Format = ".json"
+	return func(r io.Reader) Decoder {
+		dec := json.NewDecoder(r)
+		return dec
+	}
+}
+
+func DecodeTOML(e *EncoderConfig) BookDecoder {
+	e.Format = ".toml"
+	return func(r io.Reader) Decoder {
+		dec := toml.NewDecoder(r)
+		return dec
+	}
+}
+
+func (s *EncoderConfig) ReadFile(path string) error {
+	file, err := os.Open(path)
 	if err != nil {
-		return &Decoder{}, err
+		return err
 	}
-	buf := bytes.NewBuffer(data)
+	defer file.Close()
 
-	d := NewDecoder(buf)
-	ext := filepath.Ext(path)
-	if ext != ".yaml" && ext != ".yml" && ext != ".json" && ext != ".toml" {
-		return d, fmt.Errorf("set custom decoder")
-	}
-	d.Format(ext)
-
-	return d, nil
-}
-
-func (e *Decoder) Format(ext string) *Decoder {
-	switch ext {
-	case ".yaml", ".yml":
-		return e.SetDecoder(yaml.NewDecoder(e.reader))
-	case ".toml":
-		return e.SetDecoder(toml.NewDecoder(e.reader))
-	case ".json":
-		return e.SetDecoder(json.NewDecoder(e.reader))
-	default:
-		return e
-	}
-}
-
-func (d *Decoder) SetDecoder(bd BookDecoder) *Decoder {
-	d.BookDecoder = bd
-	return d
+	return s.ReadFrom(file)
 }

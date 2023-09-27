@@ -12,10 +12,10 @@ import (
 
 // Serializer holds the options for encoding or decoding a book.
 type Serializer struct {
-	indent   int
+	Indent   int
 	Format   string
-	editable bool
-	book     *Book
+	Editable bool
+	Book     *Book
 	encoder  BookEncoder
 	decoder  BookDecoder
 }
@@ -47,11 +47,11 @@ type DecoderInit func(*Serializer) BookDecoder
 // BookDecoder takes a io.Writer and returns a type that can Decode a book.
 type BookDecoder func(r io.Reader) Decoder
 
-// NewSerializer constructs a serializer for a book with options.
+// NewSerializer constructs a serializer for a book with default options.
 func NewSerializer(b *Book, opts ...SerializerOpt) *Serializer {
 	s := &Serializer{
-		book:   b,
-		indent: 2,
+		Book:   b,
+		Indent: 2,
 		Format: ".txt",
 	}
 
@@ -77,14 +77,14 @@ func (s *Serializer) Encoder(init EncoderInit) *Serializer {
 // WithIndent sets the number of spaces for indenting.
 func WithIndent(n int) SerializerOpt {
 	return func(s *Serializer) {
-		s.indent = n
+		s.Indent = n
 	}
 }
 
 // EditableOnly sets the option for serializing only editable book fields.
 func EditableOnly() SerializerOpt {
 	return func(s *Serializer) {
-		s.editable = true
+		s.Editable = true
 	}
 }
 
@@ -136,7 +136,7 @@ func (s *Serializer) ReadFile(path string) error {
 // ReadFrom reads from io.Reader for decoding.
 func (s *Serializer) ReadFrom(r io.Reader) error {
 	d := s.decoder(r)
-	return d.Decode(s.book)
+	return d.Decode(s.Book)
 }
 
 // EncodeYAML configures a YAML BookEncoder.
@@ -144,8 +144,8 @@ func EncodeYAML(s *Serializer) BookEncoder {
 	s.Format = ".yaml"
 	return func(w io.Writer) Encoder {
 		enc := yaml.NewEncoder(w)
-		if s.indent > 0 {
-			enc.SetIndent(s.indent)
+		if s.Indent > 0 {
+			enc.SetIndent(s.Indent)
 		}
 		return enc
 	}
@@ -156,8 +156,8 @@ func EncodeJSON(s *Serializer) BookEncoder {
 	s.Format = ".json"
 	return func(w io.Writer) Encoder {
 		enc := json.NewEncoder(w)
-		if s.indent > 0 {
-			enc.SetIndent("", strings.Repeat(" ", s.indent))
+		if s.Indent > 0 {
+			enc.SetIndent("", strings.Repeat(" ", s.Indent))
 		}
 		return enc
 	}
@@ -168,8 +168,8 @@ func EncodeTOML(s *Serializer) BookEncoder {
 	s.Format = ".toml"
 	return func(w io.Writer) Encoder {
 		enc := toml.NewEncoder(w)
-		if s.indent > 0 {
-			enc.SetIndentSymbol(strings.Repeat(" ", s.indent))
+		if s.Indent > 0 {
+			enc.SetIndentSymbol(strings.Repeat(" ", s.Indent))
 		}
 		return enc
 	}
@@ -190,9 +190,9 @@ func (s *Serializer) WriteFile(name string) error {
 func (s *Serializer) WriteTo(w io.Writer) error {
 	enc := s.encoder(w)
 
-	if s.editable {
-		return enc.Encode(s.book.EditableFields)
+	if s.Editable {
+		return enc.Encode(s.Book.EditableFields)
 	}
 
-	return enc.Encode(s.book)
+	return enc.Encode(s.Book)
 }

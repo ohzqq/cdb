@@ -13,7 +13,7 @@ type Book struct {
 	Timestamp      time.Time `db:"timestamp" yaml:"timestamp,omitempty" toml:"timestamp,omitempty" json:"timestamp,omitempty"`
 	Cover          string    `db:"cover" yaml:"cover,omitempty" toml:"cover,omitempty" json:"cover,omitempty"`
 	Formats        []string  `db:"formats" yaml:"formats,omitempty" toml:"formats,omitempty" json:"formats,omitempty"`
-	LastModified   time.Time `db:"last_modified" yaml:"last_modified,omitempty" toml:"last_modified,omitempty" json:"last_modified,omitempty"`
+	LastModified   time.Time `db:"last_modified" yaml:"last_modified,omitempty" toml:"last_modified,omitempty" json:"last_modified,omitempty" mapstructure:"last_modified,omitempty"`
 	ID             int       `db:"id" yaml:"id,omitempty" toml:"id,omitempty" json:"id,omitempty"`
 	Path           string    `db:"path" yaml:"path,omitempty" toml:"path,omitempty" json:"path,omitempty"`
 	UUID           string    `db:"uuid,omitempty" yaml:"uuid,omitempty" toml:"uuid,omitempty" json:"uuid,omitempty"`
@@ -27,7 +27,7 @@ type EditableFields struct {
 	Authors     []string  `db:"authors" yaml:"authors,omitempty" toml:"authors,omitempty" json:"authors,omitempty"`
 	Narrators   []string  `db:"narrators" yaml:"narrators,omitempty" toml:"narrators,omitempty" json:"narrators,omitempty"`
 	Series      string    `db:"series" yaml:"series,omitempty" toml:"series,omitempty" json:"series,omitempty"`
-	SeriesIndex float64   `db:"series_index" yaml:"series_index,omitempty" toml:"series_index,omitempty" json:"series_index,omitempty"`
+	SeriesIndex float64   `db:"series_index" yaml:"series_index,omitempty" toml:"series_index,omitempty" json:"series_index,omitempty" mapstructure:"series_index,omitempty"`
 	Tags        []string  `db:"tags" yaml:"tags,omitempty" toml:"tags,omitempty" json:"tags,omitempty"`
 	Pubdate     time.Time `db:"pubdate" yaml:"pubdate,omitempty" toml:"pubdate,omitempty" json:"pubdate,omitempty"`
 	Duration    string    `db:"duration" yaml:"duration,omitempty" toml:"duration,omitempty" json:"duration,omitempty"`
@@ -36,7 +36,7 @@ type EditableFields struct {
 	Publisher   string    `db:"publisher" yaml:"publisher,omitempty" toml:"publisher,omitempty" json:"publisher,omitempty"`
 	Languages   []string  `db:"languages" yaml:"languages,omitempty" toml:"languages,omitempty" json:"languages,omitempty"`
 	Identifiers []string  `db:"identifiers" yaml:"identifiers,omitempty" toml:"identifiers,omitempty" json:"identifiers,omitempty"`
-	AuthorSort  string    `db:"author_sort" yaml:"author_sort,omitempty" toml:"author_sort,omitempty" json:"author_sort,omitempty"`
+	AuthorSort  string    `db:"author_sort" yaml:"author_sort,omitempty" toml:"author_sort,omitempty" json:"author_sort,omitempty" mapstructure:"author_sort,omitempty"`
 	Sort        string    `db:"sort" yaml:"sort,omitempty" toml:"sort,omitempty" json:"sort,omitempty"`
 }
 

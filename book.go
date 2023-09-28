@@ -9,7 +9,7 @@ import (
 
 // Book represents a book record.
 type Book struct {
-	EditableFields `yaml:",inline"`
+	EditableFields `yaml:",inline" mapstructure:",squash"`
 	Timestamp      time.Time `db:"timestamp" yaml:"timestamp,omitempty" toml:"timestamp,omitempty" json:"timestamp,omitempty"`
 	Cover          string    `db:"cover" yaml:"cover,omitempty" toml:"cover,omitempty" json:"cover,omitempty"`
 	Formats        []string  `db:"formats" yaml:"formats,omitempty" toml:"formats,omitempty" json:"formats,omitempty"`

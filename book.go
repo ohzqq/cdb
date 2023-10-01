@@ -158,7 +158,7 @@ func (b Book) StringMap() map[string]any {
 		m[ID] = v
 	}
 
-	if v := b.SeriesIndex; v >= 0 {
+	if v := b.SeriesIndex; v >= 0 && b.Series != "" {
 		m[SeriesIndex] = v
 	}
 	return m

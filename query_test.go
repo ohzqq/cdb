@@ -17,12 +17,12 @@ func TestNewLib(t *testing.T) {
 	lib = NewLib(
 		p,
 		IsAudiobooks(),
-		//PrintQuery(),
+		PrintQuery(),
 	)
 }
 
 func booksByID() ([]Book, error) {
-	q := lib.NewQuery().GetByID(9783) //.Limit(1) //.GetByID(1)
+	q := lib.NewQuery().GetByID(1) //.Limit(1) //.GetByID(1)
 	return getBooks(q)
 }
 
